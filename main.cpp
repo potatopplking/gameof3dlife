@@ -1,5 +1,7 @@
 #include <iostream>
 #include <array>
+#include <vector>
+#include <memory>
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
@@ -50,6 +52,8 @@ namespace utils
 
     };
 
+  using Color = Vec<uint8_t, 4>;
+
 }
 
 utils::Vec<float, 2> A({1.0, 2.0});
@@ -58,11 +62,51 @@ auto C = A+B;
 auto D = A-B;
 float lol = C[0];
 
+struct Voxel {
+  utils::Vec<float, 3> position, up;
+  utils::Color color;
+};
+
+namespace Simulation {
+  class BaseSimulation {
+    public:
+      virtual void Step() = 0;
+      virtual void InitRandomState() = 0;
+      virtual std::vector<Voxel> GetVoxels() = 0; // TODO vector not efficient?
+  };
+
+  class GameOfLife2D : public BaseSimulation {
+    public:
+      GameOfLife2D() {
+
+      }
+
+      ~GameOfLife2D() {
+
+      }
+
+      // (Re)initialize to random state
+      void InitRandomState() override {
+        
+      }
+
+      void Step() override {
+
+      }
+
+      std::vector<Voxel> GetVoxels() override {
+
+      }
+
+
+
+  };
+}
+
 
 namespace UI
 {
 
-using Color = std::array<uint8_t, 4>;
 using Vec2D = std::array<int, 2>;
 
 class Window
@@ -72,9 +116,11 @@ class Window
     SDL_Renderer* renderer;
     SDL_Window* window;
     SDL_GLContext context;
+    // Simulation
+    std::unique_ptr<Simulation::BaseSimulation> sim;
 
-    Vec2D size;
-    Vec2D mouse_position;
+    utils::Vec<int, 2> size;
+    utils::Vec<int, 2> mouse_position;
 
     Window() : 
         size({800, 600}),
@@ -177,7 +223,7 @@ class Window
 
     
 
-    void ClearWindow(UI::Color c)
+    void ClearWindow(utils::Color c)
     {
         uint8_t R = c[0], G = c[1], B = c[2], A = c[3];
 //        SDL_SetRenderDrawColor(this->renderer, R, G, B, A);
@@ -215,17 +261,18 @@ class Window
 
 }
 
-
 int main(void)
 {
     std::cout << "Press 'q' to quit\n";
 
     UI::Window window;
     window.Init();
+    Simulation::GameOfLife2D sim;
+    window.sim = std::make_unique<Simulation::GameOfLife2D>();
 
     while (!window.ExitRequested()) {
         window.ProcessEvents();
-        window.ClearWindow({100,0,0,255});
+        window.ClearWindow(utils::Color({100,0,0,255}));
         window.Flush();
     }
 
