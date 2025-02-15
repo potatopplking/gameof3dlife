@@ -14,6 +14,7 @@ GLfloat vertices[] = {
 
 namespace utils
 {
+    #define VEC_FROM_XY(obj) utils::Vec<int,2>({obj.x, obj.y})
 
     template<typename T, int size>
     class Vec
@@ -46,8 +47,17 @@ namespace utils
                 return result;
             }
 
-            T operator[](int index) const {
+            T& operator[](int index) {
                 return this->elements[index];
+            }
+
+            friend std::ostream& operator<<(std::ostream& os, const Vec& obj) {
+                std::cout << "{ ";
+                for (const auto& element : obj.elements) {
+                    std::cout << element << " ";
+                }
+                std::cout << "}";
+                return os;
             }
 
     };
@@ -120,11 +130,13 @@ class Window
     std::unique_ptr<Simulation::BaseSimulation> sim;
 
     utils::Vec<int, 2> size;
-    utils::Vec<int, 2> mouse_position;
+    utils::Vec<int, 2> mouse_position, mouse_init_position;
+    double camera_pitch_deg, camera_yaw_deg;
 
     Window() : 
         size({800, 600}),
-        mouse_position({0,0})
+        mouse_position({0,0}),
+        mouse_init_position({0,0})
     {
         std::cout << "Window constructor called\n";
     }
@@ -194,8 +206,8 @@ class Window
             switch (event.type) {
                 case SDL_KEYDOWN: {
                     std::cout << "Got key down\n";
-                    SDL_KeyboardEvent* kbd_event = reinterpret_cast<SDL_KeyboardEvent*>(&event);
-                    if (kbd_event->keysym.sym == 'q') {
+                    SDL_KeyboardEvent kbd_event = event.key;
+                    if (kbd_event.keysym.sym == 'q') {
                         this->exit_requested = true;
                     }
                     break;
@@ -204,11 +216,25 @@ class Window
                     this->exit_requested = false;
                     break;
                 }
+                case SDL_MOUSEBUTTONDOWN: {
+                    SDL_MouseButtonEvent mouse_event = event.button;
+                    if (mouse_event.state == SDL_PRESSED) {
+                        std::cout << "Mouse pressed, setting init mouse position (" << mouse_event.x << ", " << mouse_event.y << ")" << std::endl;
+                        this->mouse_init_position[0] = mouse_event.x;
+                        this->mouse_init_position[1] = mouse_event.y;
+                    }
+                }
                 case SDL_MOUSEMOTION: {
-                    SDL_MouseMotionEvent* mouse_event = reinterpret_cast<SDL_MouseMotionEvent*>(&event);
-                    if (mouse_event->state == SDL_PRESSED) {
-                        std::cout << "Mouse motion:\tx: " << mouse_event->x << "\t\ty: " << mouse_event->y << std::endl; 
-                        
+                    SDL_MouseMotionEvent mouse_event = event.motion;
+                    if (mouse_event.state == SDL_PRESSED) {
+                        int diff_x = this->mouse_init_position[0] - mouse_event.x; 
+                        int diff_y = this->mouse_init_position[1] - mouse_event.y; 
+                        auto pos = VEC_FROM_XY(mouse_event);
+                        auto diff = this->mouse_init_position - pos;
+                        std::cout << "Mouse motion diff: " << diff;
+                        this->camera_yaw_deg = diff[0] * 0.1;
+                        this->camera_pitch_deg = diff[1] * 0.1;
+                        std::cout << " yaw: " << this->camera_yaw_deg << " deg; pitch: " << this->camera_pitch_deg << "deg\n";
                     }
                 }
             }
@@ -237,21 +263,34 @@ class Window
                 (GLfloat)A/255.0
                 );
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
 
-        // Draw the triangle
+    void Render() {
+        glViewport(0, 0, this->size[0], this->size[1]);
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluPerspective(45.0f, 640.0f / 480.0f, 0.1f, 100.0f);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        //gluLookAt(0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        gluLookAt(this->camera_yaw_deg, this->camera_pitch_deg, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        // TODO pozice kamery z yaw, pitch a vzdalenosti (scroll)
+
+       // Draw the triangle
         glBegin(GL_TRIANGLES);
         for (int i = 0; i < 3; i++) {
             glVertex3f(vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2]);
         }
         glEnd();
-
-        // Swap the buffers
-        SDL_GL_SwapWindow(window);
-
+ 
     }
 
     void Flush()
     {
+        // Swap the buffers
+        SDL_GL_SwapWindow(window);
         SDL_RenderPresent(this->renderer);
     }
 
@@ -273,6 +312,7 @@ int main(void)
     while (!window.ExitRequested()) {
         window.ProcessEvents();
         window.ClearWindow(utils::Color({100,0,0,255}));
+        window.Render();
         window.Flush();
     }
 
