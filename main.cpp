@@ -376,38 +376,47 @@ class Window
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    void Render() {
-        glViewport(0, 0, this->size[0], this->size[1]);
-
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        gluPerspective(45.0f, 640.0f / 480.0f, 0.1f, 100.0f);
-
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        auto coords = this->camera_pos.toCartesian();
-        gluLookAt(coords[0], coords[1], coords[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-
-        for (int i = 0; i < 10; i++) {
-            draw_cube();
-            glTranslatef(1.0f, 0.0f, 0.0f);
-            uint8_t R = 17*i + 15;
-            uint8_t G = 11*i + 50;
-            uint8_t B = 47*i + 100;
-            glColor3ub(R,G,B);
-        }
-        enable_light();
+    void Update() {
+        this->sim->Step();
+        // TODO get voxels and draw them
+        // indexing int x, y, z? One big array
+        // Step should accept dt, maybe return actual time passed?
+        this->Render(); 
     }
 
-    void Flush()
-    {
-        // Swap the buffers
-        SDL_GL_SwapWindow(window);
-        SDL_RenderPresent(this->renderer);
-    }
-
+    
     private:
         bool exit_requested = false;
+        void Render() {
+            glViewport(0, 0, this->size[0], this->size[1]);
+
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            gluPerspective(45.0f, 640.0f / 480.0f, 0.1f, 100.0f);
+
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
+            auto coords = this->camera_pos.toCartesian();
+            gluLookAt(coords[0], coords[1], coords[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+
+            for (int i = 0; i < 10; i++) {
+                draw_cube();
+                glTranslatef(1.0f, 0.0f, 0.0f);
+                uint8_t R = 17*i + 15;
+                uint8_t G = 11*i + 50;
+                uint8_t B = 47*i + 100;
+                glColor3ub(R,G,B);
+            }
+            enable_light();
+            this->Flush();
+        }
+        void Flush()
+        {
+            // Swap the buffers
+            SDL_GL_SwapWindow(window);
+            SDL_RenderPresent(this->renderer);
+        }
+
 };
 
 }
@@ -424,8 +433,7 @@ int main(void)
     while (!window.ExitRequested()) {
         window.ProcessEvents();
         window.ClearWindow(utils::Color({100,0,0,255}));
-        window.Render();
-        window.Flush();
+        window.Update();
     }
 
     return 0;
