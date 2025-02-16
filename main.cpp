@@ -2,6 +2,7 @@
 #include <array>
 #include <vector>
 #include <memory>
+#include <cmath>
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
@@ -127,12 +128,14 @@ class SphericCoords
         utils::Vec<double, 3> coords;
 
         SphericCoords(): coords({.0,.0,.0}) {}
-        SphericCoords(double phi, double theta, double r): coords({phi, theta, r}) {}
+        SphericCoords(double phi, double theta, double r): coords({phi, theta, r}) {
+            std::cout << "SphericCoords initalized: " << coords << std::endl;
+        }
 
         utils::Vec<double, 3> toCartesian() {
-            auto phi = coords[0];
-            auto theta = coords[1];
-            auto r = coords[3];
+            auto phi = coords[0] * M_PI / 180;
+            auto theta = coords[1] * M_PI / 180;
+            auto r = coords[2];
 
             auto x = r * sin(phi) * cos(theta);
             auto y = r * sin(phi) * sin(theta);
@@ -141,6 +144,75 @@ class SphericCoords
             return utils::Vec<double, 3>({x,y,z});
         }
 };
+
+void draw_cube() {
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//    glLoadIdentity();
+//
+//    glTranslatef(0.0f, 0.0f, -5.0f);
+//    glRotatef(30.0f, 1.0f, 0.0f, 0.0f);
+//    glRotatef(30.0f, 0.0f, 1.0f, 0.0f);
+//
+    GLfloat vertices[] = {
+        // Front face
+        -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        // Back face
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f
+    };
+
+    GLuint indices[] = {
+        2, 1, 0,    0, 3, 2,    // Front
+        1, 5, 6,    6, 2, 1,    // Right
+        7, 6, 5,    5, 4, 7,    // Back
+        4, 0, 3,    3, 7, 4,    // Left
+        4, 5, 1,    1, 0, 4,    // Bottom
+        3, 2, 6,    6, 7, 3     // Top
+    };
+
+    GLfloat normals[] = {
+        // Front
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f,
+        // Back
+        0.0f, 0.0f, -1.0f,
+        0.0f, 0.0f, -1.0f,
+        0.0f, 0.0f, -1.0f,
+        0.0f, 0.0f, -1.0f
+    };
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, vertices);
+    glNormalPointer(GL_FLOAT, 0, normals);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, indices);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
+}
+
+void enable_light() {
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);    // Enable lighting
+    glEnable(GL_LIGHT0);      // Enable light #0
+    glEnable(GL_COLOR_MATERIAL);
+
+    // Add ambient light
+    GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
+
+    // Configure light 0
+    GLfloat light_position[] = { 10.0f, 10.0f, 10.0f, 0.0f };
+    GLfloat light_diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+}
 
 class Window
 {
@@ -220,6 +292,8 @@ class Window
             SDL_Quit();
             return 1;
         }
+
+
         return 0;
     }
 
@@ -259,13 +333,18 @@ class Window
                     SDL_MouseMotionEvent mouse_event = event.motion;
                     if (mouse_event.state == SDL_PRESSED) {
                         int diff_x = this->mouse_init_position[0] - mouse_event.x; 
-                        int diff_y = this->mouse_init_position[1] - mouse_event.y; 
+                        int diff_y = this->mouse_init_position[1] - mouse_event.y;
                         auto pos = VEC_FROM_XY(mouse_event);
                         auto diff = this->mouse_init_position - pos;
                         std::cout << "Mouse motion diff: " << diff;
-                        this->camera_pos.coords[0] = diff[0] * 0.1;
-                        this->camera_pos.coords[1] = diff[1] * 0.1;
+                        this->camera_pos.coords[0] += -1.0 * diff[0] * 0.1;
+                        this->camera_pos.coords[1] += -1.0 * diff[1] * 0.1;
                         std::cout << " yaw: " << this->camera_pos.coords[0] << " deg; pitch: " << this->camera_pos.coords[1] << "deg\n";
+                        auto coords = this->camera_pos.toCartesian();
+                        std::cout << "spherical: " << this->camera_pos.coords 
+                                  << " to cartesian coords: " << coords << std::endl;
+                        mouse_init_position[0] = mouse_event.x;
+                        mouse_init_position[1] = mouse_event.y;
                     }
                     break;
                 }
@@ -306,17 +385,18 @@ class Window
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        //gluLookAt(0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-        gluLookAt(this->camera_pos.coords[0], this->camera_pos.coords[1], this->camera_pos.coords[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-        // TODO pozice kamery z yaw, pitch a vzdalenosti (scroll)
+        auto coords = this->camera_pos.toCartesian();
+        gluLookAt(coords[0], coords[1], coords[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
-       // Draw the triangle
-        glBegin(GL_TRIANGLES);
-        for (int i = 0; i < 3; i++) {
-            glVertex3f(vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2]);
+        for (int i = 0; i < 10; i++) {
+            draw_cube();
+            glTranslatef(1.0f, 0.0f, 0.0f);
+            uint8_t R = 17*i + 15;
+            uint8_t G = 11*i + 50;
+            uint8_t B = 47*i + 100;
+            glColor3ub(R,G,B);
         }
-        glEnd();
- 
+        enable_light();
     }
 
     void Flush()
