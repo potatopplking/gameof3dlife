@@ -119,9 +119,33 @@ namespace UI
 
 using Vec2D = std::array<int, 2>;
 
+// tracks position on a sphere. Used for camera
+class SphericCoords
+{
+    public:
+        // pitch, yaw, radius
+        utils::Vec<double, 3> coords;
+
+        SphericCoords(): coords({.0,.0,.0}) {}
+        SphericCoords(double phi, double theta, double r): coords({phi, theta, r}) {}
+
+        utils::Vec<double, 3> toCartesian() {
+            auto phi = coords[0];
+            auto theta = coords[1];
+            auto r = coords[3];
+
+            auto x = r * sin(phi) * cos(theta);
+            auto y = r * sin(phi) * sin(theta);
+            auto z = r * cos(phi);
+            
+            return utils::Vec<double, 3>({x,y,z});
+        }
+};
+
 class Window
 {
     public:
+    static constexpr double CAMERA_ZOOM_FACTOR = 1.0;
     // SDL and OpenGL attributes
     SDL_Renderer* renderer;
     SDL_Window* window;
@@ -131,7 +155,7 @@ class Window
 
     utils::Vec<int, 2> size;
     utils::Vec<int, 2> mouse_position, mouse_init_position;
-    double camera_pitch_deg, camera_yaw_deg;
+    SphericCoords camera_pos{.0, .0, 5.0};
 
     Window() : 
         size({800, 600}),
@@ -223,6 +247,13 @@ class Window
                         this->mouse_init_position[0] = mouse_event.x;
                         this->mouse_init_position[1] = mouse_event.y;
                     }
+                    break;
+                }
+                case SDL_MOUSEWHEEL: {
+                    SDL_MouseWheelEvent mouse_event = event.wheel;
+                    this->camera_pos.coords[2] += this->CAMERA_ZOOM_FACTOR * mouse_event.preciseY;
+                    std::cout << "Mouse wheel event, new coord[3] = " << this->camera_pos.coords[2] << std::endl;
+                    break;
                 }
                 case SDL_MOUSEMOTION: {
                     SDL_MouseMotionEvent mouse_event = event.motion;
@@ -232,10 +263,11 @@ class Window
                         auto pos = VEC_FROM_XY(mouse_event);
                         auto diff = this->mouse_init_position - pos;
                         std::cout << "Mouse motion diff: " << diff;
-                        this->camera_yaw_deg = diff[0] * 0.1;
-                        this->camera_pitch_deg = diff[1] * 0.1;
-                        std::cout << " yaw: " << this->camera_yaw_deg << " deg; pitch: " << this->camera_pitch_deg << "deg\n";
+                        this->camera_pos.coords[0] = diff[0] * 0.1;
+                        this->camera_pos.coords[1] = diff[1] * 0.1;
+                        std::cout << " yaw: " << this->camera_pos.coords[0] << " deg; pitch: " << this->camera_pos.coords[1] << "deg\n";
                     }
+                    break;
                 }
             }
         }
@@ -275,7 +307,7 @@ class Window
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         //gluLookAt(0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-        gluLookAt(this->camera_yaw_deg, this->camera_pitch_deg, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        gluLookAt(this->camera_pos.coords[0], this->camera_pos.coords[1], this->camera_pos.coords[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
         // TODO pozice kamery z yaw, pitch a vzdalenosti (scroll)
 
        // Draw the triangle
