@@ -52,6 +52,12 @@ namespace utils
                 return this->elements[index];
             }
 
+
+            const T& operator[](int index) const {
+                return this->elements[index];
+            }
+
+
             friend std::ostream& operator<<(std::ostream& os, const Vec& obj) {
                 std::cout << "{ ";
                 for (const auto& element : obj.elements) {
@@ -73,23 +79,42 @@ auto C = A+B;
 auto D = A-B;
 float lol = C[0];
 
+// Voxel and GridSize are used both in Simulation and Window
+// Simulation uses i,j,k coords - rows, cols, stacks
+// window uses x,y,z,w (openGL coords)
+
 struct Voxel {
-  utils::Vec<float, 3> position, up;
-  utils::Color color;
+    // coordinates of the voxel are given by its position in Voxel array
+    utils::Color color;
+
+    Voxel() : color({0,0,0,0}) {} 
 };
 
+using SimCoords = utils::Vec<uint32_t, 3>;
+
 namespace Simulation {
+
   class BaseSimulation {
     public:
-      virtual void Step() = 0;
+      // tries to conform to dt, but may differ - returns time that actually passed in the simulation
+      virtual double Step(double dt) = 0;
       virtual void InitRandomState() = 0;
-      virtual std::vector<Voxel> GetVoxels() = 0; // TODO vector not efficient?
+      virtual const utils::Vec<uint32_t, 3>& GetGridSize() = 0;
+      virtual const std::vector<Voxel>& GetVoxels() = 0; // TODO vector not efficient?
   };
 
   class GameOfLife2D : public BaseSimulation {
     public:
-      GameOfLife2D() {
-
+      GameOfLife2D(uint32_t rows, uint32_t cols): gridSize({rows,cols,1}) {
+          this->voxels.resize(rows * cols);
+          std::array<utils::Color, 2> colors{
+              utils::Color({0,0,0,255}),
+              utils::Color({255,255,255,255})
+          };
+          size_t i = 0;
+          for (auto& voxel : this->voxels) {
+              voxel.color = colors[++i % 2];
+          }
       }
 
       ~GameOfLife2D() {
@@ -101,15 +126,21 @@ namespace Simulation {
         
       }
 
-      void Step() override {
-
+      double Step(double dt) override {
+        return dt;
       }
 
-      std::vector<Voxel> GetVoxels() override {
-
+      const utils::Vec<uint32_t, 3>& GetGridSize() override {
+        return this->gridSize;
       }
 
+      const std::vector<Voxel>& GetVoxels() override {
+        return this->voxels;
+      }
 
+    private:
+      SimCoords gridSize;
+      std::vector<Voxel> voxels;
 
   };
 }
@@ -377,17 +408,17 @@ class Window
     }
 
     void Update() {
-        this->sim->Step();
-        // TODO get voxels and draw them
-        // indexing int x, y, z? One big array
-        // Step should accept dt, maybe return actual time passed?
-        this->Render(); 
+        const double dt = 0.1;
+        double time_passed = this->sim->Step(dt);
+        auto voxels = this->sim->GetVoxels();
+        this->Render(voxels); 
     }
 
     
     private:
         bool exit_requested = false;
-        void Render() {
+        void Render(const std::vector<Voxel>& voxels) {
+            // TODO render voxels
             glViewport(0, 0, this->size[0], this->size[1]);
 
             glMatrixMode(GL_PROJECTION);
@@ -416,7 +447,6 @@ class Window
             SDL_GL_SwapWindow(window);
             SDL_RenderPresent(this->renderer);
         }
-
 };
 
 }
@@ -427,8 +457,10 @@ int main(void)
 
     UI::Window window;
     window.Init();
-    Simulation::GameOfLife2D sim;
-    window.sim = std::make_unique<Simulation::GameOfLife2D>();
+    window.sim = std::make_unique<Simulation::GameOfLife2D>(10,10);
+
+    std::cout << "grid size: " << window.sim->GetGridSize() << std::endl;
+    std::cout << "voxel color : " << window.sim->GetVoxels()[0].color[1] << std::endl;
 
     while (!window.ExitRequested()) {
         window.ProcessEvents();
