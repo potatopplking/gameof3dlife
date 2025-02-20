@@ -3,6 +3,8 @@
 #include <vector>
 #include <memory>
 #include <cmath>
+#include <thread>
+#include <chrono>
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
@@ -61,7 +63,7 @@ namespace utils
             friend std::ostream& operator<<(std::ostream& os, const Vec& obj) {
                 std::cout << "{ ";
                 for (const auto& element : obj.elements) {
-                    std::cout << element << " ";
+                    std::cout << int(element) << " "; // TODO obviously wrong
                 }
                 std::cout << "}";
                 return os;
@@ -83,14 +85,19 @@ float lol = C[0];
 // Simulation uses i,j,k coords - rows, cols, stacks
 // window uses x,y,z,w (openGL coords)
 
+using SimCoords = utils::Vec<int32_t, 3>;
+
 struct Voxel {
     // coordinates of the voxel are given by its position in Voxel array
     utils::Color color;
+    SimCoords position;
+    // TODO 
+    // create VBO (or something else) when creating Simulation,
+    // then during Updates only pass color array to the Window to draw them
+    Voxel() : color({0,0,0,0}), position({0,0,0}) {} 
 
-    Voxel() : color({0,0,0,0}) {} 
 };
 
-using SimCoords = utils::Vec<uint32_t, 3>;
 
 namespace Simulation {
 
@@ -99,21 +106,30 @@ namespace Simulation {
       // tries to conform to dt, but may differ - returns time that actually passed in the simulation
       virtual double Step(double dt) = 0;
       virtual void InitRandomState() = 0;
-      virtual const utils::Vec<uint32_t, 3>& GetGridSize() = 0;
+      virtual const utils::Vec<int32_t, 3>& GetGridSize() = 0;
       virtual const std::vector<Voxel>& GetVoxels() = 0; // TODO vector not efficient?
   };
 
   class GameOfLife2D : public BaseSimulation {
     public:
-      GameOfLife2D(uint32_t rows, uint32_t cols): gridSize({rows,cols,1}) {
+      GameOfLife2D(int32_t rows, int32_t cols): gridSize({rows,cols,1}) {
           this->voxels.resize(rows * cols);
           std::array<utils::Color, 2> colors{
               utils::Color({0,0,0,255}),
               utils::Color({255,255,255,255})
           };
           size_t i = 0;
-          for (auto& voxel : this->voxels) {
-              voxel.color = colors[++i % 2];
+          const float voxel_size = 1.0f;
+
+          for (uint32_t row = 0; row < rows; row++) {
+              for (uint32_t col = 0; col < cols; col++) {
+                uint32_t index = row*cols + col; 
+                //this->voxels[index].color = colors[index%2];
+                this->voxels[index].color = utils::Color({10*row, 10*col,0});
+                this->voxels[index].position[0] = row;
+                this->voxels[index].position[1] = col;
+                this->voxels[index].position[2] = 0;
+              }
           }
       }
 
@@ -127,10 +143,24 @@ namespace Simulation {
       }
 
       double Step(double dt) override {
+        static uint32_t index = 0;
+        static utils::Color previous_color = this->voxels[index].color;
+        utils::Color highlight({250,250,250});
+        auto [rows, cols, _] = this->gridSize.elements; 
+        uint32_t row = index / cols;
+        uint32_t col = index % cols;
+
+        auto& previous_voxel = this->voxels[index];
+        previous_voxel.color = previous_color;
+        index = ++index >= rows*cols ? 0 : index;
+        auto& current_voxel = this->voxels[index];
+        previous_color = current_voxel.color;
+        current_voxel.color = highlight;
+
         return dt;
       }
 
-      const utils::Vec<uint32_t, 3>& GetGridSize() override {
+      const utils::Vec<int32_t, 3>& GetGridSize() override {
         return this->gridSize;
       }
 
@@ -176,7 +206,7 @@ class SphericCoords
         }
 };
 
-void draw_cube() {
+void draw_cube(SimCoords pos) {
 //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //    glLoadIdentity();
 //
@@ -184,6 +214,11 @@ void draw_cube() {
 //    glRotatef(30.0f, 1.0f, 0.0f, 0.0f);
 //    glRotatef(30.0f, 0.0f, 1.0f, 0.0f);
 //
+    // TODO probably should set matrix mode
+    glPushMatrix();
+    glTranslatef(
+        float(pos[0]), float(pos[1]), float(pos[2])
+    );
     GLfloat vertices[] = {
         // Front face
         -0.5f, -0.5f,  0.5f,
@@ -226,6 +261,11 @@ void draw_cube() {
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, indices);
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
+    glPopMatrix();
+}
+
+void draw_cube() {
+    draw_cube(SimCoords({0,0,0}));
 }
 
 void enable_light() {
@@ -261,7 +301,7 @@ class Window
     SphericCoords camera_pos{.0, .0, 5.0};
 
     Window() : 
-        size({800, 600}),
+        size({2000,1000}),
         mouse_position({0,0}),
         mouse_init_position({0,0})
     {
@@ -409,9 +449,13 @@ class Window
 
     void Update() {
         const double dt = 0.1;
-        double time_passed = this->sim->Step(dt);
+        // TODO timing
+        static uint32_t timer = 0;
+        if (++timer%500 == 0) {
+            double time_passed = this->sim->Step(dt);
+        }
         auto voxels = this->sim->GetVoxels();
-        this->Render(voxels); 
+        this->Render(voxels);
     }
 
     
@@ -430,12 +474,9 @@ class Window
             auto coords = this->camera_pos.toCartesian();
             gluLookAt(coords[0], coords[1], coords[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
-            for (int i = 0; i < 10; i++) {
-                draw_cube();
-                glTranslatef(1.0f, 0.0f, 0.0f);
-                uint8_t R = 17*i + 15;
-                uint8_t G = 11*i + 50;
-                uint8_t B = 47*i + 100;
+            for (auto& voxel : voxels) {
+                draw_cube(voxel.position);
+                auto R = voxel.color[0], G = voxel.color[1], B = voxel.color[2], A = voxel.color[3];
                 glColor3ub(R,G,B);
             }
             enable_light();
