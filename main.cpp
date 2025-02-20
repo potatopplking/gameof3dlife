@@ -125,17 +125,20 @@ namespace Simulation {
               for (uint32_t col = 0; col < cols; col++) {
                 uint32_t index = row*cols + col; 
                 //this->voxels[index].color = colors[index%2];
-                this->voxels[index].color = utils::Color({10*row, 10*col,0});
+                uint8_t R = 10*row;
+                uint8_t G = 10*col;
+                uint8_t B = 0;
+                auto color = utils::Color({R, G, B});
+                this->voxels[index].color = color;
                 this->voxels[index].position[0] = row;
                 this->voxels[index].position[1] = col;
                 this->voxels[index].position[2] = 0;
+                std::cout << "Setting color: row: " << row << " col: " << col << " color: " << color << std::endl;
               }
           }
       }
 
-      ~GameOfLife2D() {
-
-      }
+      ~GameOfLife2D() = default;
 
       // (Re)initialize to random state
       void InitRandomState() override {
@@ -171,7 +174,7 @@ namespace Simulation {
     private:
       SimCoords gridSize;
       std::vector<Voxel> voxels;
-
+      // TODO TODO TODO implementovat Game of life 
   };
 }
 
@@ -475,9 +478,9 @@ class Window
             gluLookAt(coords[0], coords[1], coords[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
             for (auto& voxel : voxels) {
-                draw_cube(voxel.position);
                 auto R = voxel.color[0], G = voxel.color[1], B = voxel.color[2], A = voxel.color[3];
                 glColor3ub(R,G,B);
+                draw_cube(voxel.position);
             }
             enable_light();
             this->Flush();
