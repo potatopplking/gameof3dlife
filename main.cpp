@@ -5,6 +5,7 @@
 #include <cmath>
 #include <thread>
 #include <chrono>
+#include <random>
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
@@ -135,6 +136,7 @@ namespace Simulation {
                 this->voxels[index].position[2] = 0;
                 std::cout << "Setting color: row: " << row << " col: " << col << " color: " << color << std::endl;
               }
+              this->InitRandomState();
           }
       }
 
@@ -142,24 +144,24 @@ namespace Simulation {
 
       // (Re)initialize to random state
       void InitRandomState() override {
-        
+          std::random_device rd;
+          std::mt19937 gen(rd());
+          std::bernoulli_distribution dis(0.5);
+
+          auto [rows, cols, _] = this->GetGridSize().elements;
+          this->cells.resize(rows*cols);
+          for (uint32_t index = 0; index < rows*cols; index++) {
+                this->cells[index] = dis(gen);
+          }
       }
 
       double Step(double dt) override {
-        static uint32_t index = 0;
-        static utils::Color previous_color = this->voxels[index].color;
-        utils::Color highlight({250,250,250});
+        utils::Color white({255,255,255,255});
+        utils::Color black({0,0,0,255});
         auto [rows, cols, _] = this->gridSize.elements; 
-        uint32_t row = index / cols;
-        uint32_t col = index % cols;
-
-        auto& previous_voxel = this->voxels[index];
-        previous_voxel.color = previous_color;
-        index = ++index >= rows*cols ? 0 : index;
-        auto& current_voxel = this->voxels[index];
-        previous_color = current_voxel.color;
-        current_voxel.color = highlight;
-
+        for (uint32_t index = 0; index < rows*cols; index++) {
+            this->voxels[index].color = this->cells[index] ? white : black;
+        }
         return dt;
       }
 
@@ -174,7 +176,7 @@ namespace Simulation {
     private:
       SimCoords gridSize;
       std::vector<Voxel> voxels;
-      // TODO TODO TODO implementovat Game of life 
+      std::vector<bool> cells;
   };
 }
 
@@ -381,6 +383,9 @@ class Window
                     SDL_KeyboardEvent kbd_event = event.key;
                     if (kbd_event.keysym.sym == 'q') {
                         this->exit_requested = true;
+                    } else if (kbd_event.keysym.sym == 'r') {
+                        std::cout << "Reinitializing simulation..." << std::endl;
+                        this->sim->InitRandomState();
                     }
                     break;
                 }
@@ -501,7 +506,7 @@ int main(void)
 
     UI::Window window;
     window.Init();
-    window.sim = std::make_unique<Simulation::GameOfLife2D>(10,10);
+    window.sim = std::make_unique<Simulation::GameOfLife2D>(20,20);
 
     std::cout << "grid size: " << window.sim->GetGridSize() << std::endl;
     std::cout << "voxel color : " << window.sim->GetVoxels()[0].color[1] << std::endl;
