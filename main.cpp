@@ -159,6 +159,19 @@ namespace Simulation {
         utils::Color white({255,255,255,255});
         utils::Color black({0,0,0,255});
         auto [rows, cols, _] = this->gridSize.elements; 
+
+        for (uint32_t i = 0; i < rows*cols; i++) {
+            auto neighbours_alive = this->SumNeighbouringCells(i);
+            if (neighbours_alive < 2) {
+                this->cells[i] = 0; // dies from underpopulation
+            } else if (neighbours_alive == 3) {
+                this->cells[i] = 1; // either stays alive or gets created
+            } else if (neighbours_alive > 3) {
+                this->cells[i] = 0; // dies from overpopulation
+            }
+        }
+
+
         for (uint32_t index = 0; index < rows*cols; index++) {
             this->voxels[index].color = this->cells[index] ? white : black;
         }
@@ -177,6 +190,49 @@ namespace Simulation {
       SimCoords gridSize;
       std::vector<Voxel> voxels;
       std::vector<bool> cells;
+
+      uint32_t SumNeighbouringCells(uint32_t index) {
+        auto [rows, cols, _] = this->GetGridSize().elements;
+        int32_t row = index / cols;
+        int32_t col = index % cols;
+        uint32_t sum_alive = 0;
+        int32_t up_row = row-1;
+        bool up_exists = up_row >= 0;
+        int32_t down_row = row+1;
+        bool down_exist = down_row < rows;
+        int32_t left_col = col-1;
+        bool left_exists = left_col >= 0;
+        int32_t right_col = col+1;
+        bool right_exists = right_col < cols;
+        
+        if (up_exists) {
+            if (left_exists) {
+                sum_alive += cells[up_row*cols + left_col];
+            }
+            sum_alive += cells[up_row*cols + col];
+            if (right_exists) {
+                sum_alive += cells[up_row*cols + right_col];
+            }
+        }
+        if (left_exists) {
+            sum_alive += cells[row*cols + left_col];
+        }
+        if (right_exists) {
+            sum_alive += cells[row*cols + right_col];
+        }
+        if (down_exist) {
+            if (left_exists) {
+                sum_alive += cells[down_row*cols + left_col];
+            }
+            sum_alive += cells[down_row*cols];
+            if (right_exists) {
+                sum_alive += cells[down_row*cols + right_col];
+            }
+        }
+        // TODO tohle je fakt bida, urcite to jde lip
+
+        return sum_alive;
+      }
   };
 }
 
@@ -470,7 +526,6 @@ class Window
     private:
         bool exit_requested = false;
         void Render(const std::vector<Voxel>& voxels) {
-            // TODO render voxels
             glViewport(0, 0, this->size[0], this->size[1]);
 
             glMatrixMode(GL_PROJECTION);
