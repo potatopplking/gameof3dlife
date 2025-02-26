@@ -1,6 +1,5 @@
-// TODO
 // TODO use uniform initialization
-// TODO 
+// TODO use std::initializer_list ?
 
 #include <iostream>
 #include <array>
