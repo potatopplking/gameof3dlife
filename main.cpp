@@ -1,6 +1,3 @@
-// TODO use uniform initialization
-// TODO use std::initializer_list ?
-
 #include <cassert>
 #include <iostream>
 #include <array>
@@ -89,7 +86,8 @@ namespace utils
     };
 
   using Color = Vec<uint8_t, 4>;
-
+  const auto black = Color{0,0,0,255};
+  const auto white = Color{255,255,255,255};
 }
 
 // Voxel and GridSize are used both in Simulation and Window
@@ -125,14 +123,13 @@ namespace Simulation {
     public:
       GameOfLife2D(int32_t rows, int32_t cols): gridSize{rows,cols,1} {
           this->voxels.resize(rows * cols);
-	  auto black = utils::Color{0,0,0,255};
           size_t i = 0;
           const float voxel_size = 1.0f;
 
           for (int row = 0; row < rows; row++) {
               for (int col = 0; col < cols; col++) {
                 uint32_t index = row*cols + col; 
-                this->voxels[index].color = black;
+                this->voxels[index].color = utils::black;
 		this->voxels[index].position = {row,col,0};
               }
           }
@@ -155,8 +152,6 @@ namespace Simulation {
       }
 
       double Step(double dt) override {
-        utils::Color white({255,255,255,255});
-        utils::Color black({0,0,0,255});
         auto [rows, cols, _] = this->gridSize.elements; 
 
         for (uint32_t i = 0; i < rows*cols; i++) {
@@ -170,9 +165,8 @@ namespace Simulation {
             }
         }
 
-
         for (uint32_t index = 0; index < rows*cols; index++) {
-            this->voxels[index].color = this->cells[index] ? white : black;
+            this->voxels[index].color = this->cells[index] ? utils::white : utils::black;
         }
         return dt;
       }
@@ -239,8 +233,6 @@ namespace Simulation {
 namespace UI
 {
 
-using Vec2D = std::array<int, 2>;
-
 // tracks position on a sphere. Used for camera
 class SphericCoords
 {
@@ -248,8 +240,8 @@ class SphericCoords
         // pitch, yaw, radius
         utils::Vec<double, 3> coords;
 
-        SphericCoords(): coords({.0,.0,.0}) {}
-        SphericCoords(double phi, double theta, double r): coords({phi, theta, r}) {
+        SphericCoords(): coords{.0,.0,.0} {}
+        SphericCoords(double phi, double theta, double r): coords{phi, theta, r} {
             std::cout << "SphericCoords initalized: " << coords << std::endl;
         }
 
@@ -266,7 +258,7 @@ class SphericCoords
         }
 };
 
-void draw_cube(SimCoords pos) {
+void draw_cube(SimCoords pos = {0,0,0}) {
 //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //    glLoadIdentity();
 //
@@ -324,10 +316,6 @@ void draw_cube(SimCoords pos) {
     glPopMatrix();
 }
 
-void draw_cube() {
-    draw_cube(SimCoords({0,0,0}));
-}
-
 void enable_light() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);    // Enable lighting
@@ -361,9 +349,9 @@ class Window
     SphericCoords camera_pos{.0, .0, 5.0};
 
     Window() : 
-        size({2000,1000}),
-        mouse_position({0,0}),
-        mouse_init_position({0,0})
+        size{1200,1200},
+        mouse_position{0,0},
+        mouse_init_position{0,0}
     {
         std::cout << "Window constructor called\n";
     }
@@ -410,7 +398,8 @@ class Window
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        gluPerspective(45.0f, 640.0f / 480.0f, 0.1f, 100.0f);
+	auto aspect = static_cast<float>(this->size[0])/this->size[1];
+        gluPerspective(45.0f, aspect, 0.1f, 100.0f);
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
@@ -496,16 +485,16 @@ class Window
 
     void ClearWindow(utils::Color c)
     {
-        uint8_t R = c[0], G = c[1], B = c[2], A = c[3];
+	auto [R,G,B,A] = c.elements;
 //        SDL_SetRenderDrawColor(this->renderer, R, G, B, A);
 //        SDL_RenderClear(this->renderer);
 
         // Clear the screen
         glClearColor(
-                (GLfloat)R/255.0,
-                (GLfloat)G/255.0,
-                (GLfloat)B/255.0,
-                (GLfloat)A/255.0
+                static_cast<GLfloat>(R)/255.0,
+                static_cast<GLfloat>(G)/255.0,
+                static_cast<GLfloat>(B)/255.0,
+                static_cast<GLfloat>(A)/255.0
                 );
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
@@ -529,15 +518,16 @@ class Window
 
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-            gluPerspective(45.0f, 640.0f / 480.0f, 0.1f, 100.0f);
+	    auto aspect = static_cast<float>(this->size[0]) / this->size[1];
+            gluPerspective(45.0f, aspect, 0.1f, 100.0f);
 
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
-            auto coords = this->camera_pos.toCartesian();
-            gluLookAt(coords[0], coords[1], coords[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+            auto cam_pos = this->camera_pos.toCartesian();
+            gluLookAt(cam_pos[0], cam_pos[1], cam_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
             for (auto& voxel : voxels) {
-                auto R = voxel.color[0], G = voxel.color[1], B = voxel.color[2], A = voxel.color[3];
+		auto [R,G,B,A] = voxel.color.elements;
                 glColor3ub(R,G,B);
                 draw_cube(voxel.position);
             }
