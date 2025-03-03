@@ -557,7 +557,7 @@ int main(void)
 
     while (!window.ExitRequested()) {
         window.ProcessEvents();
-        window.ClearWindow(utils::Color({100,0,0,255}));
+        window.ClearWindow(utils::Color{100,0,0,255});
         window.Update();
     }
 
