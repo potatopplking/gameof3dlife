@@ -1,6 +1,7 @@
 // TODO use uniform initialization
 // TODO use std::initializer_list ?
 
+#include <cassert>
 #include <iostream>
 #include <array>
 #include <vector>
@@ -32,11 +33,14 @@ namespace utils
 
         public:
             std::array<T, size> elements;
-
-            Vec(std::array<T, size> init_elements) {
-                // by copy
-                this->elements = init_elements;
-            }
+	    Vec(std::initializer_list<T> list) {
+		assert(size >= list.size());
+		//std:: cout << "Using std::initializer_list constructor" << std::endl;
+		size_t i = 0;
+		for (auto& l : list) {
+			this->elements[i++] = l;
+		}
+	    }
 
             Vec operator+(const Vec& other) {
                 auto result = other;
@@ -54,6 +58,10 @@ namespace utils
                 return result;
             }
 
+	    bool operator==(const Vec& other) {
+		return this->elements == other.elements;
+	    }
+
             T& operator[](int index) {
                 return this->elements[index];
             }
@@ -67,8 +75,13 @@ namespace utils
             friend std::ostream& operator<<(std::ostream& os, const Vec& obj) {
                 std::cout << "{ ";
                 for (const auto& element : obj.elements) {
-                    std::cout << int(element) << " "; // TODO obviously wrong
-                }
+		    // C++17 constexpr if
+		    if constexpr (std::is_integral_v<T>) {
+                	std::cout << int(element) << " ";
+		    } else if constexpr (std::is_floating_point_v<T>) {
+                    	std::cout << float(element) << " ";
+                    }
+		}
                 std::cout << "}";
                 return os;
             }
@@ -78,12 +91,6 @@ namespace utils
   using Color = Vec<uint8_t, 4>;
 
 }
-
-utils::Vec<float, 2> A({1.0, 2.0});
-utils::Vec<float, 2> B({3.0, 4.0});
-auto C = A+B;
-auto D = A-B;
-float lol = C[0];
 
 // Voxel and GridSize are used both in Simulation and Window
 // Simulation uses i,j,k coords - rows, cols, stacks
@@ -116,31 +123,20 @@ namespace Simulation {
 
   class GameOfLife2D : public BaseSimulation {
     public:
-      GameOfLife2D(int32_t rows, int32_t cols): gridSize({rows,cols,1}) {
+      GameOfLife2D(int32_t rows, int32_t cols): gridSize{rows,cols,1} {
           this->voxels.resize(rows * cols);
-          std::array<utils::Color, 2> colors{
-              utils::Color({0,0,0,255}),
-              utils::Color({255,255,255,255})
-          };
+	  auto black = utils::Color{0,0,0,255};
           size_t i = 0;
           const float voxel_size = 1.0f;
 
-          for (uint32_t row = 0; row < rows; row++) {
-              for (uint32_t col = 0; col < cols; col++) {
+          for (int row = 0; row < rows; row++) {
+              for (int col = 0; col < cols; col++) {
                 uint32_t index = row*cols + col; 
-                //this->voxels[index].color = colors[index%2];
-                uint8_t R = 10*row;
-                uint8_t G = 10*col;
-                uint8_t B = 0;
-                auto color = utils::Color({R, G, B});
-                this->voxels[index].color = color;
-                this->voxels[index].position[0] = row;
-                this->voxels[index].position[1] = col;
-                this->voxels[index].position[2] = 0;
-                std::cout << "Setting color: row: " << row << " col: " << col << " color: " << color << std::endl;
+                this->voxels[index].color = black;
+		this->voxels[index].position = {row,col,0};
               }
-              this->InitRandomState();
           }
+          this->InitRandomState();
       }
 
       ~GameOfLife2D() = default;

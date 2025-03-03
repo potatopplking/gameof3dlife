@@ -1,2 +1,2 @@
 all:
-	gcc main.cpp -lSDL2 -lGLEW -lGL -lstdc++ -lGLU -lm
+	gcc main.cpp -lSDL2 -lGLEW -lGL -lstdc++ -lGLU -lm -ggdb3
