@@ -1,5 +1,18 @@
 #pragma once
 
+#include <iostream>
+#include <array>
+#include <vector>
+#include <memory>
+#include <cmath>
+#include <thread>
+#include <chrono>
+#include <random>
+
+#include <SDL2/SDL.h>
+#include <GL/glew.h>
+
+
 #include "utilities.hpp"
 
 namespace UI
@@ -13,9 +26,7 @@ class SphericCoords
         utils::Vec<double, 3> coords;
 
         SphericCoords(): coords{.0,.0,.0} {}
-        SphericCoords(double phi, double theta, double r): coords{phi, theta, r} {
-            std::cout << "SphericCoords initalized: " << coords << std::endl;
-        }
+        SphericCoords(double phi, double theta, double r): coords{phi, theta, r} {}
 
         utils::Vec<double, 3> toCartesian() {
             auto phi = coords[0] * M_PI / 180;

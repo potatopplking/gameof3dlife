@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include "utilities.hpp"
 
 using SimCoords = utils::Vec<int32_t, 3>;

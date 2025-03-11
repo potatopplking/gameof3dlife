@@ -1,17 +1,9 @@
 #pragma once
 
-#include <cassert>
-#include <iostream>
 #include <array>
-#include <vector>
-#include <memory>
-#include <cmath>
-#include <thread>
-#include <chrono>
-#include <random>
-
-#include <SDL2/SDL.h>
-#include <GL/glew.h>
+#include <cassert>
+#include <cstdint>
+#include <iostream>
 
 namespace utils
 {

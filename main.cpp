@@ -1,32 +1,13 @@
-#include <cassert>
 #include <iostream>
-#include <array>
-#include <vector>
-#include <memory>
-#include <cmath>
-#include <thread>
-#include <chrono>
-#include <random>
-
-#include <SDL2/SDL.h>
-#include <GL/glew.h>
 
 #include "utilities.hpp"
 #include "voxel.hpp"
 #include "simulation.hpp"
 #include "ui.hpp"
 
-GLfloat vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
-};
-
 // Voxel and GridSize are used both in Simulation and Window
 // Simulation uses i,j,k coords - rows, cols, stacks
 // window uses x,y,z,w (openGL coords)
-
-
 
 int main(void)
 {

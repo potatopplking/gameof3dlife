@@ -1,6 +1,7 @@
 #pragma once
 
-#include "utilities.hpp"
+#include <vector>
+
 #include "voxel.hpp"
 
 namespace Simulation {
@@ -11,7 +12,7 @@ namespace Simulation {
       virtual double Step(double dt) = 0;
       virtual void InitRandomState() = 0;
       virtual const utils::Vec<int32_t, 3>& GetGridSize() = 0;
-      virtual const std::vector<Voxel>& GetVoxels() = 0; // TODO vector not efficient?
+      virtual const std::vector<Voxel>& GetVoxels() = 0;
   };
 
   class GameOfLife2D : public BaseSimulation {
