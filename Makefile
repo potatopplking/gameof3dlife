@@ -1,2 +1,2 @@
 all:
-	gcc main.cpp simulation.cpp ui.cpp utilities.cpp -lSDL3 -lGLEW -lGL -lstdc++ -lGLU -lm -ggdb3
+	gcc src/main.cpp src/simulation.cpp src/ui.cpp src/utilities.cpp -lSDL3 -lGLEW -lGL -lstdc++ -lGLU -lm -ggdb3
