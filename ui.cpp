@@ -2,7 +2,7 @@
 #include <vector>
 #include <cmath>
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #include <GL/glew.h>
 
 #include "ui.hpp"
@@ -108,7 +108,7 @@ Window::Window() :
 Window::~Window()
 {
     SDL_DestroyRenderer(this->renderer);
-    SDL_GL_DeleteContext(this->context);
+    SDL_GL_DestroyContext(this->context);
     SDL_DestroyWindow(this->window);
     SDL_Quit();
     std::cout << "Window destructor called\n";
@@ -120,7 +120,12 @@ int Window::Init()
         std::cerr << "SDL could not initialize! Error: " << SDL_GetError() << std::endl;
         return 1;
     }
-    this->window = SDL_CreateWindow("SDL2 Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, this->size[0], this->size[1], SDL_WINDOW_OPENGL);
+    this->window = SDL_CreateWindow(
+	"SDL2 Window",
+	this->size[0],
+	this->size[1],
+	SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
+    );
     if (this->window == nullptr) {
         std::cerr << "Window could not be created! Error: " << SDL_GetError() << std::endl;
         SDL_Quit();
@@ -137,7 +142,7 @@ int Window::Init()
 
     if (glewInit() != GLEW_OK) {
         std::cerr << "GLEW init failed!" << std::endl;
-        SDL_GL_DeleteContext(this->context);
+        SDL_GL_DestroyContext(this->context);
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 1;
@@ -147,17 +152,17 @@ int Window::Init()
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-auto aspect = static_cast<float>(this->size[0])/this->size[1];
+    auto aspect = static_cast<float>(this->size[0])/this->size[1];
     gluPerspective(45.0f, aspect, 0.1f, 100.0f);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
-    this->renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    this->renderer = SDL_CreateRenderer(window, NULL);
     if (this->renderer == nullptr) {
         std::cerr << "Renderer could not be created! Error: " << SDL_GetError() << std::endl;
-        SDL_DestroyWindow(window);
+        SDL_DestroyWindow(this->window);
         SDL_Quit();
         return 1;
     }
@@ -171,39 +176,39 @@ void Window::ProcessEvents()
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-            case SDL_KEYDOWN: {
+	    case SDL_EVENT_KEY_DOWN: {
                 std::cout << "Got key down\n";
                 SDL_KeyboardEvent kbd_event = event.key;
-                if (kbd_event.keysym.sym == 'q') {
+                if (kbd_event.key == 'q') {
                     this->exit_requested = true;
-                } else if (kbd_event.keysym.sym == 'r') {
+                } else if (kbd_event.key == 'r') {
                     std::cout << "Reinitializing simulation..." << std::endl;
                     this->sim->InitRandomState();
                 }
                 break;
             }
-            case SDL_QUIT: {
-                this->exit_requested = false;
+            case SDL_EVENT_QUIT: {
+                this->exit_requested = true;
                 break;
             }
-            case SDL_MOUSEBUTTONDOWN: {
+            case SDL_EVENT_MOUSE_BUTTON_DOWN: {
                 SDL_MouseButtonEvent mouse_event = event.button;
-                if (mouse_event.state == SDL_PRESSED) {
+                if (mouse_event.down == true) {
                     std::cout << "Mouse pressed, setting init mouse position (" << mouse_event.x << ", " << mouse_event.y << ")" << std::endl;
                     this->mouse_init_position[0] = mouse_event.x;
                     this->mouse_init_position[1] = mouse_event.y;
                 }
                 break;
             }
-            case SDL_MOUSEWHEEL: {
+            case SDL_EVENT_MOUSE_WHEEL: {
                 SDL_MouseWheelEvent mouse_event = event.wheel;
-                this->camera_pos.coords[2] += this->CAMERA_ZOOM_FACTOR * mouse_event.preciseY;
+                this->camera_pos.coords[2] += this->CAMERA_ZOOM_FACTOR * mouse_event.y;
                 std::cout << "Mouse wheel event, new coord[3] = " << this->camera_pos.coords[2] << std::endl;
                 break;
             }
-            case SDL_MOUSEMOTION: {
+            case SDL_EVENT_MOUSE_MOTION: {
                 SDL_MouseMotionEvent mouse_event = event.motion;
-                if (mouse_event.state == SDL_PRESSED) {
+                if (mouse_event.state == SDL_BUTTON_LMASK) {
                     int diff_x = this->mouse_init_position[0] - mouse_event.x; 
                     int diff_y = this->mouse_init_position[1] - mouse_event.y;
                     auto pos = VEC_FROM_XY(mouse_event);

@@ -7,7 +7,7 @@
 
 namespace utils
 {
-    #define VEC_FROM_XY(obj) utils::Vec<int,2>({obj.x, obj.y})
+    #define VEC_FROM_XY(obj) utils::Vec<int,2>({static_cast<int>(obj.x), static_cast<int>(obj.y)})
 
     template<typename T, int size>
     class Vec
