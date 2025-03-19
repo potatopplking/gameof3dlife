@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include "simulation.hpp"
 #include "utilities.hpp"
