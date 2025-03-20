@@ -1,11 +1,20 @@
-#include <iostream>
+#include <cmath>
 #include <vector>
+#include <numbers>
+#include <iostream>
 
 #include <SDL3/SDL.h>
 #include <GL/glew.h>
 
 #include "ui.hpp"
 #include "utilities.hpp"
+
+// A hack to get the thing to compile on Windows:
+// this probably due to the fact that GLEW has to be compiled with C linkage,
+// and the rest of the code is compiled with C++ linkage.
+#ifdef _WIN32
+GLenum GLEWAPIENTRY glewInit(void);
+#endif
 
 namespace UI {
 
@@ -84,10 +93,14 @@ void enable_light() {
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
 }
 
-Window::Window() : 
-    size{1200,1200},
+Window::Window(int width, int height) : 
+    size{width,height},
     mouse_position{0,0},
-    mouse_init_position{0,0}
+    mouse_init_position{0,0},
+    camera_pos{ -45.0, 63.0, 30.0 },
+    renderer{ nullptr },
+    window{ nullptr },
+    context{ nullptr }
 {
     std::cout << "Window constructor called\n";
 }
@@ -103,7 +116,7 @@ Window::~Window()
 
 int Window::Init()
 {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO) == false) {
         std::cerr << "SDL could not initialize! Error: " << SDL_GetError() << std::endl;
         return 1;
     }
@@ -207,8 +220,8 @@ void Window::ProcessEvents()
                 SDL_MouseButtonEvent mouse_event = event.button;
                 if (mouse_event.down == true) {
                     std::cout << "Mouse pressed, setting init mouse position (" << mouse_event.x << ", " << mouse_event.y << ")" << std::endl;
-                    this->mouse_init_position[0] = mouse_event.x;
-                    this->mouse_init_position[1] = mouse_event.y;
+                    this->mouse_init_position[0] = static_cast<int>(mouse_event.x);
+                    this->mouse_init_position[1] = static_cast<int>(mouse_event.y);
                 }
                 break;
             }
@@ -221,8 +234,8 @@ void Window::ProcessEvents()
             case SDL_EVENT_MOUSE_MOTION: {
                 SDL_MouseMotionEvent mouse_event = event.motion;
                 if (mouse_event.state == SDL_BUTTON_LMASK) {
-                    int diff_x = this->mouse_init_position[0] - mouse_event.x; 
-                    int diff_y = this->mouse_init_position[1] - mouse_event.y;
+                    int diff_x = this->mouse_init_position[0] - static_cast<int>(mouse_event.x);
+                    int diff_y = this->mouse_init_position[1] - static_cast<int>(mouse_event.y);
                     auto pos = VEC_FROM_XY(mouse_event);
                     auto diff = this->mouse_init_position - pos;
                     std::cout << "Mouse motion diff: " << diff;
@@ -232,8 +245,8 @@ void Window::ProcessEvents()
                     auto coords = this->camera_pos.toCartesian();
                     std::cout << "spherical: " << this->camera_pos.coords 
                                 << " to cartesian coords: " << coords << std::endl;
-                    mouse_init_position[0] = mouse_event.x;
-                    mouse_init_position[1] = mouse_event.y;
+                    mouse_init_position[0] = static_cast<int>(mouse_event.x);
+                    mouse_init_position[1] = static_cast<int>(mouse_event.y);
                 }
                 break;
             }
@@ -254,10 +267,10 @@ auto [R,G,B,A] = c.elements;
 
     // Clear the screen
     glClearColor(
-            static_cast<GLfloat>(R)/255.0,
-            static_cast<GLfloat>(G)/255.0,
-            static_cast<GLfloat>(B)/255.0,
-            static_cast<GLfloat>(A)/255.0
+            static_cast<GLfloat>(R)/255.0f,
+            static_cast<GLfloat>(G)/255.0f,
+            static_cast<GLfloat>(B)/255.0f,
+            static_cast<GLfloat>(A)/255.0f
             );
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -266,7 +279,7 @@ void Window::UpdateSimulation() {
     const double dt = 0.1;
     // TODO timing
     static uint32_t timer = 0;
-    if (++timer%100 == 0) {
+    if (++timer%50 == 0) {
         double time_passed = this->sim->Step(dt);
     }
 }
@@ -297,7 +310,8 @@ void Window::Flush()
 {
     // Swap the buffers
     SDL_GL_SwapWindow(window);
-    SDL_RenderPresent(this->renderer);
+    // for some reason calling SDL_RenderPresent causes the window to be blank on Windows
+    //SDL_RenderPresent(this->renderer);
 }
 
 void Window::Run()

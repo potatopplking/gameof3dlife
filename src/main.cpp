@@ -13,7 +13,7 @@ int main(void)
 {
     std::cout << "Press 'q' to quit\n";
 
-    UI::Window window;
+    UI::Window window{ 800, 600 };
     window.Init();
 
     window.SetSimulation(std::make_unique<Simulation::GameOfLife2D>(20,20));
