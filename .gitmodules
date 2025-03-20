@@ -1,3 +1,6 @@
 [submodule "vs/SDL"]
 	path = vs/SDL
 	url = https://github.com/libsdl-org/SDL.git
+[submodule "vs/glew-2.2.0"]
+	path = vs/glew-2.2.0
+	url = gitea@gitea.veleslabs.org:jan.mrna/glew.git
