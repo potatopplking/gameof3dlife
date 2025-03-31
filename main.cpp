@@ -15,7 +15,8 @@ int main(void)
 
     UI::Window window;
     window.Init();
-    window.sim = std::make_unique<Simulation::GameOfLife2D>(20,20);
+
+    window.SetSimulation(std::make_unique<Simulation::GameOfLife2D>(20,20));
 
     window.Run();
 

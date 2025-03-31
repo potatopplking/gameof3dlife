@@ -13,6 +13,7 @@ namespace Simulation {
       virtual void InitRandomState() = 0;
       virtual const utils::Vec<int32_t, 3>& GetGridSize() = 0;
       virtual const std::vector<Voxel>& GetVoxels() = 0;
+      virtual ~BaseSimulation() = default;
   };
 
   class GameOfLife2D : public BaseSimulation {

@@ -299,4 +299,9 @@ void Window::Run()
     }
 }
 
+void Window::SetSimulation(std::unique_ptr<Simulation::BaseSimulation> new_sim)
+{
+  this->sim = std::move(new_sim);
+}
+
 }

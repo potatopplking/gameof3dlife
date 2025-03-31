@@ -47,6 +47,7 @@ class Window
 
         int Init();
         void Run();
+        void SetSimulation(std::unique_ptr<Simulation::BaseSimulation> new_sim);
 
     private:
         bool exit_requested = false;
