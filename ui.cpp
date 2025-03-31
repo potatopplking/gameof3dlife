@@ -279,7 +279,7 @@ void Window::UpdateSimulation() {
     const double dt = 0.1;
     // TODO timing
     static uint32_t timer = 0;
-    if (++timer%500 == 0) {
+    if (++timer%100 == 0) {
         double time_passed = this->sim->Step(dt);
     }
 }
