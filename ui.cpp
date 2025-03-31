@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <cmath>
 
 #include <SDL3/SDL.h>
 #include <GL/glew.h>
@@ -10,19 +9,7 @@
 
 namespace UI {
 
-utils::Vec<double, 3> SphericCoords::toCartesian() {
-    auto phi = coords[0] * M_PI / 180;
-    auto theta = coords[1] * M_PI / 180;
-    auto r = coords[2];
-
-    auto x = r * sin(phi) * cos(theta);
-    auto y = r * sin(phi) * sin(theta);
-    auto z = r * cos(phi);
-
-    return utils::Vec<double, 3>({x,y,z});
-}
-
-void draw_cube(SimCoords pos) {
+void draw_cube(utils::SimCoords pos) {
 //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //    glLoadIdentity();
 //

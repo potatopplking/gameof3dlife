@@ -62,7 +62,22 @@ namespace utils
             }
         };
 
-          using Color = Vec<uint8_t, 4>;
-          const auto black = Color{0,0,0,255};
-          const auto white = Color{255,255,255,255};
+        using Color = Vec<uint8_t, 4>;
+        const auto black = Color{0,0,0,255};
+        const auto white = Color{255,255,255,255};
+
+        // tracks position on a sphere. Used for camera
+        class SphericCoords
+        {
+            public:
+                // pitch, yaw, radius
+                utils::Vec<double, 3> coords;
+
+                SphericCoords(): coords{.0,.0,.0} {}
+                SphericCoords(double phi, double theta, double r): coords{phi, theta, r} {}
+
+                utils::Vec<double, 3> toCartesian();
+        };
+
+        using SimCoords = utils::Vec<int32_t, 3>;
 }

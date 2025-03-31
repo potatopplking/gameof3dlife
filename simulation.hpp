@@ -27,7 +27,7 @@ namespace Simulation {
       const std::vector<Voxel>& GetVoxels() override;
 
     private:
-      SimCoords gridSize;
+      utils::SimCoords gridSize;
       std::vector<Voxel> voxels;
       std::vector<bool> cells;
 

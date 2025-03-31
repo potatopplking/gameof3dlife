@@ -11,20 +11,9 @@
 namespace UI
 {
 
-// tracks position on a sphere. Used for camera
-class SphericCoords
-{
-    public:
-        // pitch, yaw, radius
-        utils::Vec<double, 3> coords;
 
-        SphericCoords(): coords{.0,.0,.0} {}
-        SphericCoords(double phi, double theta, double r): coords{phi, theta, r} {}
 
-        utils::Vec<double, 3> toCartesian();
-};
-
-void draw_cube(SimCoords pos = {0,0,0});
+void draw_cube(utils::SimCoords pos = {0,0,0});
 
 void enable_light();
 
@@ -40,7 +29,7 @@ class Window
         std::unique_ptr<Simulation::BaseSimulation> sim;
         utils::Vec<int, 2> size;
         utils::Vec<int, 2> mouse_position, mouse_init_position;
-        SphericCoords camera_pos{.0, .0, 5.0};
+        utils::SphericCoords camera_pos{.0, .0, 5.0};
 
         Window();
         ~Window();
