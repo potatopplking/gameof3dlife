@@ -17,14 +17,7 @@ int main(void)
     window.Init();
     window.sim = std::make_unique<Simulation::GameOfLife2D>(20,20);
 
-    std::cout << "grid size: " << window.sim->GetGridSize() << std::endl;
-    std::cout << "voxel color : " << window.sim->GetVoxels()[0].color[1] << std::endl;
-
-    while (!window.ExitRequested()) {
-        window.ProcessEvents();
-        window.ClearWindow(utils::Color{100,0,0,255});
-        window.Update();
-    }
+    window.Run();
 
     return 0;
 }

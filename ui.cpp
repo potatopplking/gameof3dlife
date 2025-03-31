@@ -250,15 +250,13 @@ auto [R,G,B,A] = c.elements;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Window::Update() {
+void Window::UpdateSimulation() {
     const double dt = 0.1;
     // TODO timing
     static uint32_t timer = 0;
     if (++timer%500 == 0) {
         double time_passed = this->sim->Step(dt);
     }
-    auto voxels = this->sim->GetVoxels();
-    this->Render(voxels);
 }
 
 void Window::Render(const std::vector<Voxel>& voxels) {
@@ -288,6 +286,17 @@ void Window::Flush()
     // Swap the buffers
     SDL_GL_SwapWindow(window);
     SDL_RenderPresent(this->renderer);
+}
+
+void Window::Run()
+{
+    while (!ExitRequested()) {
+        ProcessEvents();
+        UpdateSimulation();
+        ClearWindow(utils::Color{100,0,0,255});
+        auto voxels = this->sim->GetVoxels();
+        Render(voxels);
+    }
 }
 
 }
