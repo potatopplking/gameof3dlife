@@ -79,5 +79,21 @@ namespace utils
                 utils::Vec<double, 3> toCartesian();
         };
 
+        enum class CoordType {
+            SPHERICAL,
+            CARTESIAN 
+        };
+        
+        // TODO udelat efektivni reprezentaci pozice, aby umela kartezske i sfericke
+        template <class T>
+        class Pos3D {
+            public:
+
+            private:
+                T lol;
+        };
+
         using SimCoords = utils::Vec<int32_t, 3>;
+
+        constexpr auto Ahohj = static_cast<int>(CoordType::SPHERICAL);
 }
