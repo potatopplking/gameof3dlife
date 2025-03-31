@@ -48,6 +48,8 @@ class Window
         int Init();
         void Run();
         void SetSimulation(std::unique_ptr<Simulation::BaseSimulation> new_sim);
+        void Resize(int width, int height);
+        void Resize(utils::Vec<int, 2> new_size);
 
     private:
         bool exit_requested = false;
@@ -58,6 +60,7 @@ class Window
         void UpdateSimulation();
         void Render(const std::vector<Voxel>& voxels);
         void Flush();
+        void Resize();
 };
 
 }

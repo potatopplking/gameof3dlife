@@ -148,16 +148,7 @@ int Window::Init()
         return 1;
     }
 
-    glViewport(0, 0, this->size[0], this->size[1]);
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    auto aspect = static_cast<float>(this->size[0])/this->size[1];
-    gluPerspective(45.0f, aspect, 0.1f, 100.0f);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    Resize();
 
     this->renderer = SDL_CreateRenderer(window, NULL);
     if (this->renderer == nullptr) {
@@ -171,12 +162,46 @@ int Window::Init()
     return 0;
 }
 
+// if called without arguments, just refresh the matrices and viewport
+void Window::Resize()
+{
+    glViewport(0, 0, this->size[0], this->size[1]);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    auto aspect = static_cast<float>(this->size[0])/this->size[1];
+    gluPerspective(45.0f, aspect, 0.1f, 100.0f);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    auto cam_pos = this->camera_pos.toCartesian();
+    gluLookAt(cam_pos[0], cam_pos[1], cam_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+
+}
+
+void Window::Resize(int width, int height)
+{
+    Resize(utils::Vec<int,2>{width, height});
+}
+
+void Window::Resize(utils::Vec<int, 2> new_size)
+{
+    this->size = new_size;
+    Resize();
+}
+
 void Window::ProcessEvents()
 {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-	    case SDL_EVENT_KEY_DOWN: {
+            case SDL_EVENT_WINDOW_RESIZED: {
+                std::cout << "Window resized event" << std::endl;
+                SDL_WindowEvent win = event.window;
+                auto new_size = utils::Vec<int,2>{win.data1, win.data2};
+                Resize(new_size);
+                break;
+            }
+	        case SDL_EVENT_KEY_DOWN: {
                 std::cout << "Got key down\n";
                 SDL_KeyboardEvent kbd_event = event.key;
                 if (kbd_event.key == 'q') {
