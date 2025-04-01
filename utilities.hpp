@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cmath>
 #include <cassert>
 #include <cstdint>
 #include <iostream>
@@ -79,21 +80,56 @@ namespace utils
                 utils::Vec<double, 3> toCartesian();
         };
 
-        enum class CoordType {
+        enum class CoordinateSystem {
             SPHERICAL,
-            CARTESIAN 
+            CARTESIAN
         };
-        
-        // TODO udelat efektivni reprezentaci pozice, aby umela kartezske i sfericke
-        template <class T>
-        class Pos3D {
-            public:
 
-            private:
-                T lol;
+        template <CoordinateSystem T>
+        class Pos3D {
+
+            using Pos_t = Vec<double, 3>;
+
+            public:
+                Pos3D(std::initializer_list<double> x) : pos{x} {}
+                Pos3D() : pos{.0, .0, .0} {}
+
+                inline double operator[](int index) const {
+                    return this->pos[index];
+                }
+
+                inline double& operator[](int index) {
+                    return this->pos[index];
+                }
+
+                // TODO add cout
+
+                template <CoordinateSystem Dest_T>
+                inline Pos3D<Dest_T> Convert() {
+                    if constexpr (Dest_T == T) {
+                        return *this;
+                    }
+                    if constexpr (Dest_T == CoordinateSystem::SPHERICAL) {
+                        // convert CARTESIAN to SPHERICAL
+                        assert(false);
+                        return Pos3D<Dest_T>();
+                    } else {
+                        // convert SPHERICAL to CARTESIAN 
+                        auto phi = pos[0] * M_PI / 180;
+                        auto theta = pos[1] * M_PI / 180;
+                        auto r = pos[2];
+
+                        auto x = r * sin(phi) * cos(theta);
+                        auto y = r * sin(phi) * sin(theta);
+                        auto z = r * cos(phi);
+
+                        return Pos3D<Dest_T>{x,y,z};
+                    }
+                }
+
+                // TODO this should be private, but kept public due to missing cout
+                Pos_t pos;
         };
 
         using SimCoords = utils::Vec<int32_t, 3>;
-
-        constexpr auto Ahohj = static_cast<int>(CoordType::SPHERICAL);
 }

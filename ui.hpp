@@ -29,7 +29,7 @@ class Window
         std::unique_ptr<Simulation::BaseSimulation> sim;
         utils::Vec<int, 2> size;
         utils::Vec<int, 2> mouse_position, mouse_init_position;
-        utils::SphericCoords camera_pos{.0, .0, 5.0};
+        utils::Pos3D<utils::CoordinateSystem::SPHERICAL> camera_pos;
 
         Window();
         ~Window();
