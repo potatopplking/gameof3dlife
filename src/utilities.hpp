@@ -6,6 +6,11 @@
 #include <cstdint>
 #include <iostream>
 
+#ifdef _WIN32
+  #include <numbers>
+  #define M_PI std::numbers::pi
+#endif
+
 namespace utils
 {
     #define VEC_FROM_XY(obj) utils::Vec<int,2>({static_cast<int>(obj.x), static_cast<int>(obj.y)})
