@@ -2,6 +2,11 @@
 
 #include "utilities.hpp"
 
+#ifdef _WIN32
+#include <numbers>
+#define M_PI std::numbers::pi
+#endif
+
 namespace utils {
 
     utils::Vec<double, 3> SphericCoords::toCartesian() {

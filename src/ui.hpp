@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include "simulation.hpp"
 #include "utilities.hpp"
@@ -32,6 +32,7 @@ class Window
         utils::Pos3D<utils::CoordinateSystem::SPHERICAL> camera_pos;
 
         Window();
+        Window(int width, int height);
         ~Window();
 
         int Init();

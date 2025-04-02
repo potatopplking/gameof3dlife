@@ -30,7 +30,7 @@ void GameOfLife2D::InitRandomState()  {
 
     auto [rows, cols, _] = this->GetGridSize().elements;
     this->cells.resize(rows*cols);
-    for (uint32_t index = 0; index < rows*cols; index++) {
+    for (int index = 0; index < rows*cols; index++) {
         this->cells[index] = dis(gen);
     }
 }
@@ -38,7 +38,7 @@ void GameOfLife2D::InitRandomState()  {
 double GameOfLife2D::Step(double dt)  {
     auto [rows, cols, _] = this->gridSize.elements; 
 
-    for (uint32_t i = 0; i < rows*cols; i++) {
+    for (int i = 0; i < rows*cols; i++) {
         auto neighbours_alive = this->SumNeighbouringCells(i);
         if (neighbours_alive < 2) {
             this->cells[i] = 0; // dies from underpopulation
@@ -49,7 +49,7 @@ double GameOfLife2D::Step(double dt)  {
         }
     }
 
-    for (uint32_t index = 0; index < rows*cols; index++) {
+    for (int index = 0; index < rows*cols; index++) {
         this->voxels[index].color = this->cells[index] ? utils::white : utils::black;
     }
     return dt;
