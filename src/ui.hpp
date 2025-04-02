@@ -32,6 +32,7 @@ class Window
         utils::SphericCoords camera_pos{.0, .0, 5.0};
 
         Window();
+        Window(int width, int height);
         ~Window();
 
         int Init();
