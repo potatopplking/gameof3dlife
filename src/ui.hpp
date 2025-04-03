@@ -17,6 +17,38 @@ void draw_cube(utils::SimCoords pos = {0,0,0});
 
 void enable_light();
 
+
+// mouse input in, camera position out
+class Camera
+{
+public:
+    Camera() : 
+        pos{ .0, .0, .0 },
+        lookAt{ .0, .0, .0 },
+        aspect{ 0 }
+    {}
+    ~Camera() = default;
+
+    using MouseMovement = std::tuple<int, int>;
+
+    void SetPan(MouseMovement diff);
+    void SetZoom(float scroll_value);
+    void SetRotation(MouseMovement diff);
+
+    void SetPerspectiveProjection();
+    void TranslateRotateScene();
+    
+    utils::Pos3D<utils::CoordinateSystem::SPHERICAL> pos; // delete
+    double aspect;
+
+private:
+
+    using CS = utils::CoordinateSystem;
+
+    //utils::Pos3D<CS::SPHERICAL> pos;
+    utils::Pos3D<CS::CARTESIAN> lookAt;
+};
+
 class Window
 {
     public:
@@ -29,7 +61,8 @@ class Window
         std::unique_ptr<Simulation::BaseSimulation> sim;
         utils::Vec<int, 2> size;
         utils::Vec<int, 2> mouse_position, mouse_init_position;
-        utils::Pos3D<utils::CoordinateSystem::SPHERICAL> camera_pos;
+        Camera camera;
+        //utils::Pos3D<utils::CoordinateSystem::SPHERICAL> camera_pos;
 
         Window();
         Window(int width, int height);

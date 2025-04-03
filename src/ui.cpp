@@ -93,16 +93,18 @@ void enable_light() {
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
 }
 
-Window::Window(int width, int height) : 
-    size{width,height},
-    mouse_position{0,0},
-    mouse_init_position{0,0},
-    camera_pos{ -45.0, 63.0, 30.0 },
+Window::Window(int width, int height) :
+    size{ width,height },
+    mouse_position{ 0,0 },
+    mouse_init_position{ 0,0 },
     renderer{ nullptr },
     window{ nullptr },
     context{ nullptr }
 {
     std::cout << "Window constructor called\n";
+    camera.pos[0] = -45.0;
+    camera.pos[1] = 63.0;
+    camera.pos[2] = 30.0;
 }
 
 Window::~Window()
@@ -173,9 +175,10 @@ void Window::Resize()
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    auto cam_pos = this->camera_pos.Convert<utils::CoordinateSystem::CARTESIAN>();
+    auto cam_pos = this->camera.pos.Convert<utils::CoordinateSystem::CARTESIAN>();
     gluLookAt(cam_pos[0], cam_pos[1], cam_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
+    camera.aspect = static_cast<float>(this->size[0]) / this->size[1];
 }
 
 void Window::Resize(int width, int height)
@@ -227,8 +230,8 @@ void Window::ProcessEvents()
             }
             case SDL_EVENT_MOUSE_WHEEL: {
                 SDL_MouseWheelEvent mouse_event = event.wheel;
-                this->camera_pos[2] += this->CAMERA_ZOOM_FACTOR * mouse_event.y;
-                std::cout << "Mouse wheel event, new coord[3] = " << this->camera_pos[2] << std::endl;
+                this->camera.pos[2] += this->CAMERA_ZOOM_FACTOR * mouse_event.y;
+                std::cout << "Mouse wheel event, new coord[3] = " << this->camera.pos[2] << std::endl;
                 break;
             }
             case SDL_EVENT_MOUSE_MOTION: {
@@ -239,11 +242,11 @@ void Window::ProcessEvents()
                     auto pos = VEC_FROM_XY(mouse_event);
                     auto diff = this->mouse_init_position - pos;
                     std::cout << "Mouse motion diff: " << diff;
-                    this->camera_pos[0] += -1.0 * diff[0] * 0.1;
-                    this->camera_pos[1] += -1.0 * diff[1] * 0.1;
-                    std::cout << " yaw: " << this->camera_pos[0] << " deg; pitch: " << this->camera_pos[1] << "deg\n";
-                    auto coords = this->camera_pos.Convert<utils::CoordinateSystem::CARTESIAN>();
-                    std::cout << "spherical: " << this->camera_pos.pos 
+                    this->camera.pos[0] += -1.0 * diff[0] * 0.1;
+                    this->camera.pos[1] += -1.0 * diff[1] * 0.1;
+                    std::cout << " yaw: " << this->camera.pos[0] << " deg; pitch: " << this->camera.pos[1] << "deg\n";
+                    auto coords = this->camera.pos.Convert<utils::CoordinateSystem::CARTESIAN>();
+                    std::cout << "spherical: " << this->camera.pos.pos 
                                 << " to cartesian coords: " << coords.pos << std::endl;
                     mouse_init_position[0] = static_cast<int>(mouse_event.x);
                     mouse_init_position[1] = static_cast<int>(mouse_event.y);
@@ -287,18 +290,11 @@ void Window::UpdateSimulation() {
 void Window::Render(const std::vector<Voxel>& voxels) {
     glViewport(0, 0, this->size[0], this->size[1]);
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    auto aspect = static_cast<float>(this->size[0]) / this->size[1];
-    gluPerspective(45.0f, aspect, 0.1f, 100.0f);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    auto cam_pos = this->camera_pos.Convert<utils::CoordinateSystem::CARTESIAN>();
-    gluLookAt(cam_pos[0], cam_pos[1], cam_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    camera.SetPerspectiveProjection();
+    camera.TranslateRotateScene();
 
     for (auto& voxel : voxels) {
-    auto [R,G,B,A] = voxel.color.elements;
+        auto [R,G,B,A] = voxel.color.elements;
         glColor3ub(R,G,B);
         draw_cube(voxel.position);
     }
@@ -328,6 +324,21 @@ void Window::Run()
 void Window::SetSimulation(std::unique_ptr<Simulation::BaseSimulation> new_sim)
 {
   this->sim = std::move(new_sim);
+}
+
+void Camera::SetPerspectiveProjection()
+{
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45.0f, this->aspect, 0.1f, 100.0f);
+}
+
+void Camera::TranslateRotateScene()
+{
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    auto cam_pos = pos.Convert<utils::CoordinateSystem::CARTESIAN>();
+    gluLookAt(cam_pos[0], cam_pos[1], cam_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 }
 
 }
