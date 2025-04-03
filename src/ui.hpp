@@ -32,7 +32,7 @@ public:
     using MouseMovement = std::tuple<int, int>;
 
     void SetPan(MouseMovement diff);
-    void SetZoom(float scroll_value);
+    void SetZoom(float scroll_diff);
     void SetRotation(MouseMovement diff);
 
     void SetPerspectiveProjection();
@@ -42,7 +42,7 @@ public:
     double aspect;
 
 private:
-
+    static constexpr double CAMERA_ZOOM_FACTOR = 1.0;
     using CS = utils::CoordinateSystem;
 
     //utils::Pos3D<CS::SPHERICAL> pos;
@@ -52,7 +52,6 @@ private:
 class Window
 {
     public:
-        static constexpr double CAMERA_ZOOM_FACTOR = 1.0;
         // SDL and OpenGL attributes
         SDL_Renderer* renderer;
         SDL_Window* window;

@@ -230,15 +230,23 @@ void Window::ProcessEvents()
             }
             case SDL_EVENT_MOUSE_WHEEL: {
                 SDL_MouseWheelEvent mouse_event = event.wheel;
-                this->camera.pos[2] += this->CAMERA_ZOOM_FACTOR * mouse_event.y;
-                std::cout << "Mouse wheel event, new coord[3] = " << this->camera.pos[2] << std::endl;
+                this->camera.SetZoom(mouse_event.y);
                 break;
             }
             case SDL_EVENT_MOUSE_MOTION: {
                 SDL_MouseMotionEvent mouse_event = event.motion;
                 if (mouse_event.state == SDL_BUTTON_LMASK) {
+
+                    auto mouse_current_pos = utils::Vec<int, 2>{ 
+                        static_cast<int>(mouse_event.x),
+                        static_cast<int>(mouse_event.y)
+                    };
+
+                    // TODO tady
+
                     int diff_x = this->mouse_init_position[0] - static_cast<int>(mouse_event.x);
                     int diff_y = this->mouse_init_position[1] - static_cast<int>(mouse_event.y);
+
                     auto pos = VEC_FROM_XY(mouse_event);
                     auto diff = this->mouse_init_position - pos;
                     std::cout << "Mouse motion diff: " << diff;
@@ -248,6 +256,9 @@ void Window::ProcessEvents()
                     auto coords = this->camera.pos.Convert<utils::CoordinateSystem::CARTESIAN>();
                     std::cout << "spherical: " << this->camera.pos.pos 
                                 << " to cartesian coords: " << coords.pos << std::endl;
+
+                    camera.SetRotation(diff)
+
                     mouse_init_position[0] = static_cast<int>(mouse_event.x);
                     mouse_init_position[1] = static_cast<int>(mouse_event.y);
                 }
@@ -340,5 +351,21 @@ void Camera::TranslateRotateScene()
     auto cam_pos = pos.Convert<utils::CoordinateSystem::CARTESIAN>();
     gluLookAt(cam_pos[0], cam_pos[1], cam_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 }
+
+void Camera::SetZoom(float scroll_diff)
+{
+    this->pos[2] += this->CAMERA_ZOOM_FACTOR * scroll_diff;
+}
+
+void Camera::SetPan(MouseMovement diff)
+{
+
+}
+
+void Camera::SetRotation(MouseMovement diff)
+{
+
+}
+
 
 }
