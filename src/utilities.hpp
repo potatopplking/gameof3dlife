@@ -44,6 +44,17 @@ namespace utils
                 }
                 return result;
             }
+
+            template <class U>
+            Vec operator*(U& other)
+            {
+                auto result = *this;
+                for (auto& element : result.elements) {
+                    element *= static_cast<T>(other);
+                }
+                return result;
+            }
+
             bool operator==(const Vec& other) {
                 return this->elements == other.elements;
             }

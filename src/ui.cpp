@@ -232,12 +232,14 @@ void Window::ProcessEvents()
             }
             case SDL_EVENT_MOUSE_MOTION: {
                 SDL_MouseMotionEvent mouse_event = event.motion;
+                auto mouse_current_pos = utils::Vec<int, 2>{mouse_event.x, mouse_event.y};
+                auto diff = this->mouse_prev_pos - mouse_current_pos;
                 if (mouse_event.state == SDL_BUTTON_LMASK) {
-                    auto mouse_current_pos = utils::Vec<int, 2>{mouse_event.x, mouse_event.y};
-                    auto diff = this->mouse_prev_pos - mouse_current_pos;
                     camera.SetRotation(diff);
-                    mouse_prev_pos = mouse_current_pos;
+                } else if (mouse_event.state == SDL_BUTTON_MMASK) {
+                    camera.SetPan(diff);   
                 }
+                mouse_prev_pos = mouse_current_pos;
                 break;
             }
         }
@@ -340,9 +342,7 @@ void Camera::SetPan(MousePos diff)
 
 void Camera::SetRotation(MousePos diff)
 {
-    this->pos[0] += -1.0 * diff[0] * 0.1;
-    this->pos[1] += -1.0 * diff[1] * 0.1;
-    std::cout << " yaw: " << this->pos[0] << " deg; pitch: " << this->pos[1] << "deg\n";
+    this->pos += -0.1 * diff;
 }
 
 
