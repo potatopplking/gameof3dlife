@@ -29,11 +29,11 @@ public:
     {}
     ~Camera() = default;
 
-    using MouseMovement = std::tuple<int, int>;
+    using MousePos = utils::Vec<int,2>;
 
-    void SetPan(MouseMovement diff);
+    void SetPan(MousePos diff);
     void SetZoom(float scroll_diff);
-    void SetRotation(MouseMovement diff);
+    void SetRotation(MousePos diff);
 
     void SetPerspectiveProjection();
     void TranslateRotateScene();
@@ -59,9 +59,8 @@ class Window
         // Simulation
         std::unique_ptr<Simulation::BaseSimulation> sim;
         utils::Vec<int, 2> size;
-        utils::Vec<int, 2> mouse_position, mouse_init_position;
+        utils::Vec<int, 2> mouse_prev_pos;
         Camera camera;
-        //utils::Pos3D<utils::CoordinateSystem::SPHERICAL> camera_pos;
 
         Window();
         Window(int width, int height);

@@ -13,19 +13,19 @@
 
 namespace utils
 {
-    #define VEC_FROM_XY(obj) utils::Vec<int,2>({static_cast<int>(obj.x), static_cast<int>(obj.y)})
-
     template<typename T, int size>
     class Vec
     {
         public:
             std::array<T, size> elements;
-            Vec(std::initializer_list<T> list) {
+
+            template <class U>
+            Vec(std::initializer_list<U> list) {
                 assert(size >= list.size());
                 //std:: cout << "Using std::initializer_list constructor" << std::endl;
                 size_t i = 0;
                 for (auto& l : list) {
-                    this->elements[i++] = l;
+                    this->elements[i++] = static_cast<T>(l);
                 }
             }
 
@@ -96,7 +96,7 @@ namespace utils
             using Pos_t = Vec<double, 3>;
 
             public:
-                Pos3D(std::initializer_list<double> x) : pos{x} {}
+                Pos3D(std::initializer_list<double> x) : pos(x) {}
                 Pos3D() : pos{.0, .0, .0} {}
 
                 inline double operator[](int index) const {

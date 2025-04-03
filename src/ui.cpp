@@ -95,8 +95,7 @@ void enable_light() {
 
 Window::Window(int width, int height) :
     size{ width,height },
-    mouse_position{ 0,0 },
-    mouse_init_position{ 0,0 },
+    mouse_prev_pos{ 0,0 },
     renderer{ nullptr },
     window{ nullptr },
     context{ nullptr }
@@ -222,9 +221,7 @@ void Window::ProcessEvents()
             case SDL_EVENT_MOUSE_BUTTON_DOWN: {
                 SDL_MouseButtonEvent mouse_event = event.button;
                 if (mouse_event.down == true) {
-                    std::cout << "Mouse pressed, setting init mouse position (" << mouse_event.x << ", " << mouse_event.y << ")" << std::endl;
-                    this->mouse_init_position[0] = static_cast<int>(mouse_event.x);
-                    this->mouse_init_position[1] = static_cast<int>(mouse_event.y);
+                    this->mouse_prev_pos = utils::Vec<int,2>{mouse_event.x, mouse_event.y};
                 }
                 break;
             }
@@ -236,31 +233,10 @@ void Window::ProcessEvents()
             case SDL_EVENT_MOUSE_MOTION: {
                 SDL_MouseMotionEvent mouse_event = event.motion;
                 if (mouse_event.state == SDL_BUTTON_LMASK) {
-
-                    auto mouse_current_pos = utils::Vec<int, 2>{ 
-                        static_cast<int>(mouse_event.x),
-                        static_cast<int>(mouse_event.y)
-                    };
-
-                    // TODO tady
-
-                    int diff_x = this->mouse_init_position[0] - static_cast<int>(mouse_event.x);
-                    int diff_y = this->mouse_init_position[1] - static_cast<int>(mouse_event.y);
-
-                    auto pos = VEC_FROM_XY(mouse_event);
-                    auto diff = this->mouse_init_position - pos;
-                    std::cout << "Mouse motion diff: " << diff;
-                    this->camera.pos[0] += -1.0 * diff[0] * 0.1;
-                    this->camera.pos[1] += -1.0 * diff[1] * 0.1;
-                    std::cout << " yaw: " << this->camera.pos[0] << " deg; pitch: " << this->camera.pos[1] << "deg\n";
-                    auto coords = this->camera.pos.Convert<utils::CoordinateSystem::CARTESIAN>();
-                    std::cout << "spherical: " << this->camera.pos.pos 
-                                << " to cartesian coords: " << coords.pos << std::endl;
-
-                    camera.SetRotation(diff)
-
-                    mouse_init_position[0] = static_cast<int>(mouse_event.x);
-                    mouse_init_position[1] = static_cast<int>(mouse_event.y);
+                    auto mouse_current_pos = utils::Vec<int, 2>{mouse_event.x, mouse_event.y};
+                    auto diff = this->mouse_prev_pos - mouse_current_pos;
+                    camera.SetRotation(diff);
+                    mouse_prev_pos = mouse_current_pos;
                 }
                 break;
             }
@@ -357,14 +333,16 @@ void Camera::SetZoom(float scroll_diff)
     this->pos[2] += this->CAMERA_ZOOM_FACTOR * scroll_diff;
 }
 
-void Camera::SetPan(MouseMovement diff)
+void Camera::SetPan(MousePos diff)
 {
 
 }
 
-void Camera::SetRotation(MouseMovement diff)
+void Camera::SetRotation(MousePos diff)
 {
-
+    this->pos[0] += -1.0 * diff[0] * 0.1;
+    this->pos[1] += -1.0 * diff[1] * 0.1;
+    std::cout << " yaw: " << this->pos[0] << " deg; pitch: " << this->pos[1] << "deg\n";
 }
 
 
