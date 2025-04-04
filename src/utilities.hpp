@@ -29,6 +29,12 @@ namespace utils
                 }
             }
 
+            Vec() {
+                for (auto& element : this->elements) {
+                    element = static_cast<T>(0);
+                }
+            }
+
             Vec operator+(const Vec& other) {
                 auto result = other;
                 for (int i = 0; i < size; i++) {
@@ -63,16 +69,6 @@ namespace utils
                 return result;
             }
             
-            static Vec CrossProduct(Vec& a, Vec& b) {
-                Vec result;
-
-                result[0] = a[1] * b[2] - a[2] * b[1];
-                result[1] = a[2] * b[0] - a[0] * b[2];
-                result[2] = a[0] * b[1] - a[1] * b[0];
-
-                return result;
-            }
-
             bool operator==(const Vec& other) {
                 return this->elements == other.elements;
             }
@@ -166,4 +162,22 @@ namespace utils
         };
 
         using SimCoords = utils::Vec<int32_t, 3>;
+
+template<class T, int dim>
+Vec<T,dim> CrossProduct(Vec<T,dim>& a, Vec<T,dim>& b) {
+    
+    Vec<T,dim> result;
+    
+    if constexpr (dim == 2) {
+        static_assert(false, "pls implement");
+
+    } else if constexpr (dim == 3) {
+        result[0] = a[1] * b[2] - a[2] * b[1];
+        result[1] = a[2] * b[0] - a[0] * b[2];
+        result[2] = a[0] * b[1] - a[1] * b[0];
+    } else {
+        static_assert(false, "Cross product arguments can have dimension 2 or 3");
+    }
+    return result;
+}
 }

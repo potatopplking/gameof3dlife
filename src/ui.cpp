@@ -254,7 +254,7 @@ void Window::UpdateSimulation() {
     const double dt = 0.1;
     // TODO timing
     static uint32_t timer = 0;
-    if (++timer%50 == 0) {
+    if (++timer%150 == 0) {
         double time_passed = this->sim->Step(dt);
     }
 }
@@ -328,15 +328,16 @@ void Camera::SetZoom(float scroll_diff)
 
 void Camera::SetPan(MousePos diff)
 {
-    // TODO potrebujeme spocitat vektor kolmy na up a (lookAt-pos) a pohybovat se podle nej
-
-    auto perpendicular = utils::Vec<double,3>::CrossProduct(this->lookAt.pos, this->up.pos);
-    // this->lookAt[0] += perpendicular[0] * diff[0] * 0.1;
-
-
-    this->lookAt[0] += diff[0] * -0.1;
-    this->lookAt[1] += diff[1] * -0.1;
-    std::cout << "SetPan called: (" << this->lookAt[0] << ", " << this->lookAt[1] << ")" << std::endl;
+    auto view_vector = this->lookAt.pos - this->pos.pos;
+    auto perpendicular = utils::CrossProduct(view_vector, this->up.pos);
+    std::cout << "view_vector: " << view_vector << std::endl;
+    std::cout << "this->pos.pos: " << this->pos.pos << std::endl;
+    std::cout << "this->lookAt.pos: " << this->lookAt.pos << std::endl;
+    std::cout << "this->up.pos: " << this->up.pos << std::endl;
+    std::cout << "perpendicular: " << perpendicular << std::endl;
+    this->lookAt[0] += perpendicular[0] * diff[0] * 0.1;
+    this->lookAt[1] += perpendicular[1] * diff[1] * 0.1;
+    std::cout << "SetPan called: (" << diff[0] << ", " << diff[1] << ")" << std::endl;
 }
 
 void Camera::SetRotation(MousePos diff)
@@ -345,6 +346,7 @@ void Camera::SetRotation(MousePos diff)
     // y movement [1] translates to yaw
     this->pos[0] += diff[0] * -0.1;
     this->pos[1] += diff[1] * -0.1;
+    std::cout << "SetRotation called: (" << diff[0] << ", " << diff[1] << ")" << std::endl;
 }
 
 
