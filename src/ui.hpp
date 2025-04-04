@@ -21,15 +21,19 @@ void enable_light();
 // mouse input in, camera position out
 class Camera
 {
+    using MousePos = utils::Vec<int, 2>;
+    using CS = utils::CoordinateSystem;
+
 public:
     Camera() : 
-        pos{ .0, .0, .0 },
-        lookAt{ .0, .0, .0 },
+        up{     0.0, 1.0, 0.0 },
+        pos{    0.0, 0.0, 0.0 },
+        lookAt{ 0.0, 0.0, 0.0 },
         aspect{ 0 }
     {}
     ~Camera() = default;
 
-    using MousePos = utils::Vec<int,2>;
+    static constexpr double CAMERA_ZOOM_FACTOR = 1.0;
 
     void SetPan(MousePos diff);
     void SetZoom(float scroll_diff);
@@ -37,16 +41,13 @@ public:
 
     void SetPerspectiveProjection();
     void TranslateRotateScene();
-    
-    utils::Pos3D<utils::CoordinateSystem::SPHERICAL> pos; // delete
+
     double aspect;
+    utils::Pos3D<CS::SPHERICAL> pos; // TODO move to private
 
 private:
-    static constexpr double CAMERA_ZOOM_FACTOR = 1.0;
-    using CS = utils::CoordinateSystem;
-
-    //utils::Pos3D<CS::SPHERICAL> pos;
     utils::Pos3D<CS::CARTESIAN> lookAt;
+    utils::Pos3D<CS::CARTESIAN> up;
 };
 
 class Window

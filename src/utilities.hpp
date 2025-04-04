@@ -45,12 +45,20 @@ namespace utils
                 return result;
             }
 
-            template <class U>
+            /*template <class U>
             Vec operator*(U& other)
             {
                 auto result = *this;
                 for (auto& element : result.elements) {
                     element *= static_cast<T>(other);
+                }
+                return result;
+            }*/
+
+            Vec operator*(double scalar) {
+                Vec result = *this;
+                for (auto& element : result.elements) {
+                    element *= static_cast<T>(scalar);
                 }
                 return result;
             }

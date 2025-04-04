@@ -149,7 +149,7 @@ int Window::Init()
         return 1;
     }
 
-    Resize();
+    Resize(this->size);
 
     this->renderer = SDL_CreateRenderer(window, NULL);
     if (this->renderer == nullptr) {
@@ -163,23 +163,6 @@ int Window::Init()
     return 0;
 }
 
-// if called without arguments, just refresh the matrices and viewport
-void Window::Resize()
-{
-    glViewport(0, 0, this->size[0], this->size[1]);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    auto aspect = static_cast<float>(this->size[0])/this->size[1];
-    gluPerspective(45.0f, aspect, 0.1f, 100.0f);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    auto cam_pos = this->camera.pos.Convert<utils::CoordinateSystem::CARTESIAN>();
-    gluLookAt(cam_pos[0], cam_pos[1], cam_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-
-    camera.aspect = static_cast<float>(this->size[0]) / this->size[1];
-}
-
 void Window::Resize(int width, int height)
 {
     Resize(utils::Vec<int,2>{width, height});
@@ -188,7 +171,7 @@ void Window::Resize(int width, int height)
 void Window::Resize(utils::Vec<int, 2> new_size)
 {
     this->size = new_size;
-    Resize();
+    camera.aspect = static_cast<float>(this->size[0]) / this->size[1];
 }
 
 void Window::ProcessEvents()
@@ -326,8 +309,16 @@ void Camera::TranslateRotateScene()
 {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    auto cam_pos = pos.Convert<utils::CoordinateSystem::CARTESIAN>();
-    gluLookAt(cam_pos[0], cam_pos[1], cam_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    auto eye_pos_cartesian = pos.Convert<utils::CoordinateSystem::CARTESIAN>();
+    using namespace utils;
+    auto up = Pos3D<CoordinateSystem::CARTESIAN>{ 0.0, 1.0, 0.0 };
+    gluLookAt(eye_pos_cartesian[0],
+              eye_pos_cartesian[1],
+              eye_pos_cartesian[2],
+              this->lookAt[0],
+              this->lookAt[1],
+              this->lookAt[2],
+              up[0], up[1], up[2]);
 }
 
 void Camera::SetZoom(float scroll_diff)
@@ -337,12 +328,18 @@ void Camera::SetZoom(float scroll_diff)
 
 void Camera::SetPan(MousePos diff)
 {
-
+    // TODO potrebujeme spocitat vektor kolmy na up a (lookAt-pos) a pohybovat se podle nej
+    this->lookAt[0] += diff[0] * -0.1;
+    this->lookAt[1] += diff[1] * -0.1;
+    std::cout << "SetPan called: (" << this->lookAt[0] << ", " << this->lookAt[1] << ")" << std::endl;
 }
 
 void Camera::SetRotation(MousePos diff)
 {
-    this->pos += -0.1 * diff;
+    // x movement [0] translates to pitch
+    // y movement [1] translates to yaw
+    this->pos[0] += diff[0] * -0.1;
+    this->pos[1] += diff[1] * -0.1;
 }
 
 
