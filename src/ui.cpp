@@ -329,6 +329,11 @@ void Camera::SetZoom(float scroll_diff)
 void Camera::SetPan(MousePos diff)
 {
     // TODO potrebujeme spocitat vektor kolmy na up a (lookAt-pos) a pohybovat se podle nej
+
+    auto perpendicular = utils::Vec<double,3>::CrossProduct(this->lookAt.pos, this->up.pos);
+    // this->lookAt[0] += perpendicular[0] * diff[0] * 0.1;
+
+
     this->lookAt[0] += diff[0] * -0.1;
     this->lookAt[1] += diff[1] * -0.1;
     std::cout << "SetPan called: (" << this->lookAt[0] << ", " << this->lookAt[1] << ")" << std::endl;
