@@ -43,11 +43,12 @@ public:
     void TranslateRotateScene();
 
     double aspect;
-    utils::Pos3D<CS::SPHERICAL> pos; // TODO move to private
+    utils::CSVec<CS::SPHERICAL> pos; // TODO move to private
 
 private:
-    utils::Pos3D<CS::CARTESIAN> lookAt;
-    utils::Pos3D<CS::CARTESIAN> up;
+    std::array<utils::CSVec<utils::CoordinateSystem::CARTESIAN>,2> GetImagePlaneBasis();
+    utils::CSVec<CS::CARTESIAN> lookAt;
+    utils::CSVec<CS::CARTESIAN> up;
 };
 
 class Window

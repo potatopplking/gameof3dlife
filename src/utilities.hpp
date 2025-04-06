@@ -13,6 +13,7 @@
 
 namespace utils
 {
+    // generic vector
     template<typename T, int size>
     class Vec
     {
@@ -72,12 +73,15 @@ namespace utils
             bool operator==(const Vec& other) {
                 return this->elements == other.elements;
             }
+
             T& operator[](int index) {
                 return this->elements[index];
             }
+
             const T& operator[](int index) const {
                 return this->elements[index];
             }
+
             friend std::ostream& operator<<(std::ostream& os, const Vec& obj) {
                 std::cout << "{ ";
                 for (const auto& element : obj.elements) {
@@ -97,32 +101,18 @@ namespace utils
         const auto black = Color{0,0,0,255};
         const auto white = Color{255,255,255,255};
 
-        // tracks position on a sphere. Used for camera
-        class SphericCoords
-        {
-            public:
-                // pitch, yaw, radius
-                utils::Vec<double, 3> coords;
-
-                SphericCoords(): coords{.0,.0,.0} {}
-                SphericCoords(double phi, double theta, double r): coords{phi, theta, r} {}
-
-                utils::Vec<double, 3> toCartesian();
-        };
-
         enum class CoordinateSystem {
             SPHERICAL,
             CARTESIAN
         };
 
+        // a vector that holds information about coordinate system
         template <CoordinateSystem T>
-        class Pos3D {
-
-            using Pos_t = Vec<double, 3>;
+        class CSVec {
 
             public:
-                Pos3D(std::initializer_list<double> x) : pos(x) {}
-                Pos3D() : pos{.0, .0, .0} {}
+                CSVec(std::initializer_list<double> x) : pos(x) {}
+                CSVec() : pos{.0, .0, .0} {}
 
                 inline double operator[](int index) const {
                     return this->pos[index];
@@ -135,14 +125,14 @@ namespace utils
                 // TODO add cout
 
                 template <CoordinateSystem Dest_T>
-                inline Pos3D<Dest_T> Convert() {
+                inline CSVec<Dest_T> Convert() {
                     if constexpr (Dest_T == T) {
                         return *this;
                     }
                     if constexpr (Dest_T == CoordinateSystem::SPHERICAL) {
                         // convert CARTESIAN to SPHERICAL
                         assert(false);
-                        return Pos3D<Dest_T>();
+                        return CSVec<Dest_T>();
                     } else {
                         // convert SPHERICAL to CARTESIAN 
                         auto phi = pos[0] * M_PI / 180;
@@ -153,12 +143,12 @@ namespace utils
                         auto y = r * sin(phi) * sin(theta);
                         auto z = r * cos(phi);
 
-                        return Pos3D<Dest_T>{x,y,z};
+                        return CSVec<Dest_T>{x,y,z};
                     }
                 }
 
                 // TODO this should be private, but kept public due to missing cout
-                Pos_t pos;
+                Vec<double,3> pos;
         };
 
         using SimCoords = utils::Vec<int32_t, 3>;
