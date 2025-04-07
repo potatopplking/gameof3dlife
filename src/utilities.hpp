@@ -22,6 +22,7 @@ namespace utils
 
             template <class U>
             Vec(std::initializer_list<U> list) {
+                std::cout <<"Vec{initializer_list} constructor called" << std::endl;
                 assert(size >= list.size());
                 //std:: cout << "Using std::initializer_list constructor" << std::endl;
                 size_t i = 0;
@@ -31,6 +32,7 @@ namespace utils
             }
 
             Vec() {
+                std::cout <<"Vec() constructor called" << std::endl;
                 for (auto& element : this->elements) {
                     element = static_cast<T>(0);
                 }
@@ -103,7 +105,43 @@ namespace utils
 
         enum class CoordinateSystem {
             SPHERICAL,
-            CARTESIAN
+            CARTESIAN,
+            POLAR,
+        };
+
+        
+        template <CoordinateSystem T, class ElementT, int dimension>
+        class NewCSVec : public Vec<ElementT,dimension> {
+            public:
+            NewCSVec() {
+                std::cout <<"NewCSVec() constructor called" << std::endl;
+            }
+            NewCSVec(std::initializer_list<double> list) : Vec<ElementT,dimension>(list) {
+                std::cout <<"NewCSVec{initializer_list} constructor called" << std::endl;
+            }
+
+            template <CoordinateSystem Dest_T>
+            inline NewCSVec<Dest_T, ElementT, dimension> Convert() {
+                if constexpr (Dest_T == T) {
+                    return *this;
+                }
+                if constexpr (Dest_T == CoordinateSystem::SPHERICAL) {
+                    // convert CARTESIAN to SPHERICAL
+                    assert(false);
+                    return NewCSVec<Dest_T, ElementT, dimension>();
+                } else if constexpr (dimension == 3) {
+                    // convert SPHERICAL to CARTESIAN 
+                    auto phi = this->elements[0] * M_PI / 180;
+                    auto theta = this->elements[1] * M_PI / 180;
+                    auto r = this->elements[2];
+
+                    auto x = r * sin(phi) * cos(theta);
+                    auto y = r * sin(phi) * sin(theta);
+                    auto z = r * cos(phi);
+
+                    return NewCSVec<Dest_T, ElementT, dimension>{x,y,z};
+                }
+            }
         };
 
         // a vector that holds information about coordinate system
