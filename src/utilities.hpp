@@ -11,6 +11,8 @@
   #define M_PI std::numbers::pi
 #endif
 
+#include "Log.hpp"
+
 namespace utils
 {
 
@@ -37,9 +39,9 @@ class Vec
 
         template <class U>
         Vec(std::initializer_list<U> list) {
-            //std::cout <<"Vec{initializer_list} constructor called" << std::endl; // TODO debug output
+            Log::debug("Vec{initializer_list} constructor called" );
             assert(size == list.size());
-            //std:: cout << "Using std::initializer_list constructor" << std::endl;
+            //std:: cout );
             size_t i = 0;
             for (auto& l : list) {
                 this->elements[i++] = static_cast<T>(l);
@@ -47,13 +49,14 @@ class Vec
         }
 
         Vec() {
-            //std::cout <<"Vec() constructor called" << std::endl;
+            Log::debug("Vec() constructor called" );
             for (auto& element : this->elements) {
                 element = static_cast<T>(0);
             }
         }
 
         Vec operator+(const Vec& other) {
+            Log::debug("Vec::operator+" );
             auto result = other;
             for (int i = 0; i < size; i++) {
                 result.elements[i] += this->elements[i];
@@ -62,6 +65,7 @@ class Vec
         }
 
         Vec operator-(const Vec& other) {
+            Log::debug("Vec::operator+" );
             auto result = other;
             for (int i = 0; i < size; i++) {
                 result.elements[i] -= this->elements[i];
@@ -80,6 +84,7 @@ class Vec
         }*/
 
         Vec operator*(double scalar) {
+            Log::debug("Vec::operator*" );
             Vec result = *this;
             for (auto& element : result.elements) {
                 element *= static_cast<T>(scalar);
@@ -88,18 +93,22 @@ class Vec
         }
         
         bool operator==(const Vec& other) {
+            Log::debug("Vec::operator==" );
             return this->elements == other.elements;
         }
 
         bool operator!=(const Vec& other) {
+            Log::debug("Vec::operator!=" );
             return !(this->operator==(other));
         }
 
         T& operator[](int index) {
+            Log::debug("Vec::operator[]" );
             return this->elements[index];
         }
 
         const T& operator[](int index) const {
+            Log::debug("Vec::operator[] const" );
             return this->elements[index];
         }
 
@@ -125,20 +134,25 @@ template <CoordinateSystem CS, typename ElementT, int dimension>
 class CSVec : public Vec<ElementT,dimension> {
     public:
     CSVec() {
-        //std::cout <<"CSVec() constructor called" << std::endl;
+        Log::debug("CSVec() constructor called" );
     }
     CSVec(std::initializer_list<double> list) : Vec<ElementT,dimension>(list) {
-        //std::cout <<"CSVec{initializer_list} constructor called" << std::endl;
+        Log::debug("CSVec{initializer_list} constructor called" );
     }
 
     CSVec(Vec<ElementT, dimension>& vec) {
-        std::cout << "CSVec(Vec) called" << std::endl;
+        Log::debug( "CSVec(Vec) called" );
         this->elements = vec.elements;
     }
 
     template <CoordinateSystem SourceCS>
     CSVec(const CSVec<SourceCS, ElementT, dimension>& from_vec) {
+        Log::debug( "CSVec(CSVec)" );
+        // Log::debug( "CSVec(CSVec): CS = ", CS );
+        // Log::debug( "CSVec(CSVec): SourceCS = ", SourceCS );
+        // Log::debug( "CSVec(CSVec): dimension = ", dimension );
         Convert<SourceCS, CS>(*this, from_vec);
+        Log::debug( "CSVec(CSVec): Convert done, src = ",  from_vec, " dst = ", *this );
     }
 
     // different coord system should return false, although elements
@@ -146,32 +160,43 @@ class CSVec : public Vec<ElementT,dimension> {
     template <CoordinateSystem OtherCS,
              typename OtherElementT,
              int OtherDimension>
-    bool operator==(const CSVec<OtherCS, OtherElementT, OtherDimension>& other) const {
+    bool operator==(const CSVec<OtherCS, OtherElementT, OtherDimension>& other) {
+        Log::debug( "CSVec::operator==" );
         if constexpr (
-                OtherCS == CS             &&
-                typeid(OtherElementT) == typeid(ElementT) &&
+                OtherCS == CS &&
+                std::is_same_v<OtherElementT, ElementT> &&
                 OtherDimension == dimension
                 ) {
             // passthrough only if types are identical,
             // explicit conversion is needed for comparison
             // between coordinate systems
-            // TODO tady
-            return Vec<ElementT,dimension>::operator==(other);
+            return Vec<OtherElementT,OtherDimension>::operator==(other);
         }
         return false;
+    }
+
+    template <CoordinateSystem OtherCS,
+             typename OtherElementT,
+             int OtherDimension>
+    bool operator!=(const CSVec<OtherCS, OtherElementT, OtherDimension>& other) {
+        return !this->operator==<OtherCS, OtherElementT, OtherDimension>(other);
     }
 
     // modify in-place
     template <CoordinateSystem SourceCS, CoordinateSystem TargetCS>
     static void Convert(      CSVec<TargetCS, ElementT, dimension>& target,
                         const CSVec<SourceCS, ElementT, dimension>& source) {
+        Log::debug( "CSVec::Convert" );
         if constexpr (dimension != 3) {
             // only 3D currently supported
             // TODO use static_assert? But win for some reason doesn't even compile
+            Log::critical("CSVec::Convert: dimension != 3");
             assert(false);
         }
 
         if constexpr (TargetCS == SourceCS) {
+            Log::debug( "CSVec::Convert: TargetCS == SourceCS" );
+            // no conversion needed
             return;
         }
         if constexpr (
@@ -179,16 +204,28 @@ class CSVec : public Vec<ElementT,dimension> {
             SourceCS == CoordinateSystem::CARTESIAN
         ) {
             // convert CARTESIAN to SPHERICAL
-            assert(false); // TODO
+            Log::debug( "CSVec::Convert: from CARTESIAN to SPHERICAL" );
+
+            auto [x, y, z] = source.elements;
+
+            auto r = std::sqrt(x * x + y * y + z * z);
+            auto phi = std::atan2(std::sqrt(x * x + y * y), z) * 180 / M_PI;
+            auto theta = std::atan2(y, x) * 180 / M_PI;
+            // TODO use radians you dum dum
+            target.elements[0] = phi;
+            target.elements[1] = theta;
+            target.elements[2] = r;
+
             return;
         } else if constexpr (
             TargetCS == CoordinateSystem::CARTESIAN &&
             SourceCS == CoordinateSystem::SPHERICAL
         ) {
+            Log::debug( "CSVec::Convert: from SPHERICAL to CARTESIAN" );
             // convert SPHERICAL to CARTESIAN 
-            auto phi = target.elements[0] * M_PI / 180;
-            auto theta = target.elements[1] * M_PI / 180;
-            auto r = target.elements[2];
+            auto phi = source.elements[0] * M_PI / 180;
+            auto theta = source.elements[1] * M_PI / 180;
+            auto r = source.elements[2];
 
             auto x = r * sin(phi) * cos(theta);
             auto y = r * sin(phi) * sin(theta);
@@ -200,6 +237,19 @@ class CSVec : public Vec<ElementT,dimension> {
 
             return;
         }
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const CSVec& obj) {
+        std::cout << "{ ";
+        for (const auto& element : obj.elements) {
+            if constexpr (std::is_integral_v<ElementT>) {
+                std::cout << int(element) << " ";
+            } else if constexpr (std::is_floating_point_v<ElementT>) {
+                std::cout << float(element) << " ";
+            }
+        }
+        std::cout << "}";
+        return os;
     }
 
 };
