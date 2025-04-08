@@ -43,12 +43,21 @@ public:
     void TranslateRotateScene();
 
     double aspect;
-    utils::CSVec<CS::SPHERICAL> pos; // TODO move to private
+    utils::CSVec<CS::SPHERICAL, double, 3> pos; // TODO move to private
 
 private:
-    std::array<utils::CSVec<utils::CoordinateSystem::CARTESIAN>,2> GetImagePlaneBasis();
-    utils::CSVec<CS::CARTESIAN> lookAt;
-    utils::CSVec<CS::CARTESIAN> up;
+
+    template <utils::CoordinateSystem CS>
+    std::array<utils::CSVec<CS, double, 3>,2> GetImagePlaneBasis() {
+        auto view_vector = this->lookAt - this->pos;
+        auto imagePlaneX = utils::CrossProduct(view_vector, this->up);
+        auto imagePlaneY = utils::CrossProduct(imagePlaneX, this->up);
+        std::array<utils::CSVec<CS, double, 3>,2> lol{imagePlaneX, imagePlaneY};
+        return lol;
+    }
+
+    utils::CSVec<CS::CARTESIAN, double, 3> lookAt;
+    utils::CSVec<CS::CARTESIAN, double, 3> up;
 };
 
 class Window

@@ -311,7 +311,7 @@ void Camera::TranslateRotateScene()
     glLoadIdentity();
     auto eye_pos_cartesian = pos.Convert<utils::CoordinateSystem::CARTESIAN>();
     using namespace utils;
-    auto up = CSVec<CoordinateSystem::CARTESIAN>{ 0.0, 1.0, 0.0 };
+    auto up = CSVec<CoordinateSystem::CARTESIAN, double, 3>{ 0.0, 1.0, 0.0 };
     gluLookAt(eye_pos_cartesian[0],
               eye_pos_cartesian[1],
               eye_pos_cartesian[2],
@@ -326,26 +326,15 @@ void Camera::SetZoom(float scroll_diff)
     this->pos[2] += this->CAMERA_ZOOM_FACTOR * scroll_diff;
 }
 
-auto Camera::GetImagePlaneBasis() -> 
-std::array<utils::CSVec<utils::CoordinateSystem::CARTESIAN>,2>
-{
-//    auto view_vector = this->lookAt.pos - this->pos.pos;
-//    auto imagePlaneX = utils::CrossProduct(view_vector, this->up.pos);
-//    auto imagePlaneY = utils::CrossProduct(imagePlaneX, this->up.pos);
-//    std::array<utils::CSVec<utils::CoordinateSystem::CARTESIAN>,2> lol{imagePlaneX, imagePlaneY};
-//    return lol;
-    return std::array<utils::CSVec<utils::CoordinateSystem::CARTESIAN>,2>();
-}
-
 void Camera::SetPan(MousePos diff)
 {
-    auto view_vector = this->lookAt.pos - this->pos.pos;
-    auto imagePlaneX = utils::CrossProduct(view_vector, this->up.pos);
-    auto imagePlaneY = utils::CrossProduct(imagePlaneX, this->up.pos);
+    auto view_vector = this->lookAt - this->pos;
+    auto imagePlaneX = utils::CrossProduct(view_vector, this->up);
+    auto imagePlaneY = utils::CrossProduct(imagePlaneX, this->up);
     std::cout << "view_vector: " << view_vector << std::endl;
-    std::cout << "this->pos.pos: " << this->pos.pos << std::endl;
-    std::cout << "this->lookAt.pos: " << this->lookAt.pos << std::endl;
-    std::cout << "this->up.pos: " << this->up.pos << std::endl;
+    std::cout << "this->pos: " << this->pos << std::endl;
+    std::cout << "this->lookAt: " << this->lookAt << std::endl;
+    std::cout << "this->up: " << this->up << std::endl;
     std::cout << "imagePlaneX: " << imagePlaneX << std::endl;
     std::cout << "imagePlaneY: " << imagePlaneY << std::endl;
     this->lookAt[0] += imagePlaneX[0] * diff[0] * 0.1;
@@ -357,9 +346,9 @@ void Camera::SetRotation(MousePos diff)
 {
     // x movement [0] translates to pitch
     // y movement [1] translates to yaw
-    auto view_vector = this->lookAt.pos - this->pos.pos;
-    auto imagePlaneX = utils::CrossProduct(view_vector, this->up.pos);
-    auto imagePlaneY = utils::CrossProduct(imagePlaneX, this->up.pos);
+    auto view_vector = this->lookAt - this->pos;
+    auto imagePlaneX = utils::CrossProduct(view_vector, this->up);
+    auto imagePlaneY = utils::CrossProduct(imagePlaneX, this->up);
     this->pos[0] += diff[0] * -0.1;
     this->pos[1] += diff[1] * -0.1;
     std::cout << "SetRotation called: (" << diff[0] << ", " << diff[1] << ")" << std::endl;

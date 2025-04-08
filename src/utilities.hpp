@@ -22,7 +22,7 @@ namespace utils
 
             template <class U>
             Vec(std::initializer_list<U> list) {
-                std::cout <<"Vec{initializer_list} constructor called" << std::endl;
+                //std::cout <<"Vec{initializer_list} constructor called" << std::endl; // TODO debug output
                 assert(size >= list.size());
                 //std:: cout << "Using std::initializer_list constructor" << std::endl;
                 size_t i = 0;
@@ -32,7 +32,7 @@ namespace utils
             }
 
             Vec() {
-                std::cout <<"Vec() constructor called" << std::endl;
+                //std::cout <<"Vec() constructor called" << std::endl;
                 for (auto& element : this->elements) {
                     element = static_cast<T>(0);
                 }
@@ -109,26 +109,26 @@ namespace utils
             POLAR,
         };
 
-        
+        // a vector that holds information about coordinate system
         template <CoordinateSystem T, class ElementT, int dimension>
-        class NewCSVec : public Vec<ElementT,dimension> {
+        class CSVec : public Vec<ElementT,dimension> {
             public:
-            NewCSVec() {
-                std::cout <<"NewCSVec() constructor called" << std::endl;
+            CSVec() {
+                //std::cout <<"CSVec() constructor called" << std::endl;
             }
-            NewCSVec(std::initializer_list<double> list) : Vec<ElementT,dimension>(list) {
-                std::cout <<"NewCSVec{initializer_list} constructor called" << std::endl;
+            CSVec(std::initializer_list<double> list) : Vec<ElementT,dimension>(list) {
+                //std::cout <<"CSVec{initializer_list} constructor called" << std::endl;
             }
 
             template <CoordinateSystem Dest_T>
-            inline NewCSVec<Dest_T, ElementT, dimension> Convert() {
+            inline CSVec<Dest_T, ElementT, dimension> Convert() {
                 if constexpr (Dest_T == T) {
                     return *this;
                 }
                 if constexpr (Dest_T == CoordinateSystem::SPHERICAL) {
                     // convert CARTESIAN to SPHERICAL
                     assert(false);
-                    return NewCSVec<Dest_T, ElementT, dimension>();
+                    return CSVec<Dest_T, ElementT, dimension>();
                 } else if constexpr (dimension == 3) {
                     // convert SPHERICAL to CARTESIAN 
                     auto phi = this->elements[0] * M_PI / 180;
@@ -139,54 +139,9 @@ namespace utils
                     auto y = r * sin(phi) * sin(theta);
                     auto z = r * cos(phi);
 
-                    return NewCSVec<Dest_T, ElementT, dimension>{x,y,z};
+                    return CSVec<Dest_T, ElementT, dimension>{x,y,z};
                 }
             }
-        };
-
-        // a vector that holds information about coordinate system
-        template <CoordinateSystem T>
-        class CSVec {
-
-            public:
-                CSVec(std::initializer_list<double> x) : pos(x) {}
-                CSVec() : pos{.0, .0, .0} {}
-
-                inline double operator[](int index) const {
-                    return this->pos[index];
-                }
-
-                inline double& operator[](int index) {
-                    return this->pos[index];
-                }
-
-                // TODO add cout
-
-                template <CoordinateSystem Dest_T>
-                inline CSVec<Dest_T> Convert() {
-                    if constexpr (Dest_T == T) {
-                        return *this;
-                    }
-                    if constexpr (Dest_T == CoordinateSystem::SPHERICAL) {
-                        // convert CARTESIAN to SPHERICAL
-                        assert(false);
-                        return CSVec<Dest_T>();
-                    } else {
-                        // convert SPHERICAL to CARTESIAN 
-                        auto phi = pos[0] * M_PI / 180;
-                        auto theta = pos[1] * M_PI / 180;
-                        auto r = pos[2];
-
-                        auto x = r * sin(phi) * cos(theta);
-                        auto y = r * sin(phi) * sin(theta);
-                        auto z = r * cos(phi);
-
-                        return CSVec<Dest_T>{x,y,z};
-                    }
-                }
-
-                // TODO this should be private, but kept public due to missing cout
-                Vec<double,3> pos;
         };
 
         using SimCoords = utils::Vec<int32_t, 3>;
@@ -197,14 +152,15 @@ Vec<T,dim> CrossProduct(Vec<T,dim>& a, Vec<T,dim>& b) {
     Vec<T,dim> result;
     
     if constexpr (dim == 2) {
-        static_assert(false, "pls implement");
+        // TODO uncomment - windows compiler was failing here
+        //static_assert(false, "pls implement");
 
     } else if constexpr (dim == 3) {
         result[0] = a[1] * b[2] - a[2] * b[1];
         result[1] = a[2] * b[0] - a[0] * b[2];
         result[2] = a[0] * b[1] - a[1] * b[0];
     } else {
-        static_assert(false, "Cross product arguments can have dimension 2 or 3");
+        //static_assert(false, "Cross product arguments can have dimension 2 or 3");
     }
     return result;
 }
