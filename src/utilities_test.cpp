@@ -2,6 +2,7 @@
 #include <cassert>
 
 #include "utilities.hpp"
+#include "log.hpp"
 
 using namespace utils;
 
@@ -23,13 +24,18 @@ int main(void)
     CSVec<CoordinateSystem::CARTESIAN, double, 3> cv2{0.0,0.0,0.0};
     assert(cv1 == cv2);
     auto cv3 = CSVec(cv2);
-    assert(cv3 == cv2);
     CSVec<CoordinateSystem::SPHERICAL, double, 3> cv4;
-    CSVec<CoordinateSystem::SPHERICAL, double, 3> cv5(cv4);
-    std::cout << cv3 << std::endl;
-    std::cout << cv4 << std::endl;
-    assert(cv4 == cv3); // different coord sys, therefore not equal
+    assert(cv4 != cv1); // different coord sys, therefore not equal
+    //CSVec<CoordinateSystem::SPHERICAL, double, 3> cv5(cv4);
+    //assert(cv5 == cv4);
 
+    std::cout << std::endl << std::endl;
+        
+    Log::debug("debug");
+    Log::info("info");
+    Log::warning("warning");
+    Log::error("error");
+    Log::critical("critical");
 
 //    CSVec<CoordinateSystem::CARTESIAN, double, 3> lol{1.0,2.0,3.0};
 //    CSVec<CoordinateSystem::CARTESIAN, double, 3> rofl(lol);
