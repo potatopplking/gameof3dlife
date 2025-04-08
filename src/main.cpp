@@ -13,11 +13,11 @@ int main(void)
 {
     std::cout << "Press 'q' to quit\n";
 
-    using namespace utils;
-    CSVec<CoordinateSystem::CARTESIAN, double, 3> lol{1.0,2.0,3.0};
-    CSVec<CoordinateSystem::CARTESIAN, double, 3> rofl(lol);
-    CSVec<CoordinateSystem::SPHERICAL, double, 3> roflmao(lol);
-    return 0;
+//    using namespace utils;
+//    CSVec<CoordinateSystem::CARTESIAN, double, 3> lol{1.0,2.0,3.0};
+//    CSVec<CoordinateSystem::CARTESIAN, double, 3> rofl(lol);
+//    CSVec<CoordinateSystem::SPHERICAL, double, 3> roflmao(lol);
+//    return 0;
 
 
     UI::Window window{ 800, 600 };

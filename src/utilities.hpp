@@ -13,153 +13,175 @@
 
 namespace utils
 {
-    // generic vector
-    template<typename T, int size>
-    class Vec
-    {
-        public:
-            std::array<T, size> elements;
 
-            template <class U>
-            Vec(std::initializer_list<U> list) {
-                //std::cout <<"Vec{initializer_list} constructor called" << std::endl; // TODO debug output
-                assert(size >= list.size());
-                //std:: cout << "Using std::initializer_list constructor" << std::endl;
-                size_t i = 0;
-                for (auto& l : list) {
-                    this->elements[i++] = static_cast<T>(l);
+/*
+ * Enums and types
+ */
+
+enum class CoordinateSystem {
+    SPHERICAL,
+    CARTESIAN,
+    POLAR,
+};
+
+/*
+ * Classes
+ */
+
+// generic vector
+template<typename T, int size>
+class Vec
+{
+    public:
+        std::array<T, size> elements;
+
+        template <class U>
+        Vec(std::initializer_list<U> list) {
+            //std::cout <<"Vec{initializer_list} constructor called" << std::endl; // TODO debug output
+            assert(size >= list.size());
+            //std:: cout << "Using std::initializer_list constructor" << std::endl;
+            size_t i = 0;
+            for (auto& l : list) {
+                this->elements[i++] = static_cast<T>(l);
+            }
+        }
+
+        Vec() {
+            //std::cout <<"Vec() constructor called" << std::endl;
+            for (auto& element : this->elements) {
+                element = static_cast<T>(0);
+            }
+        }
+
+        Vec operator+(const Vec& other) {
+            auto result = other;
+            for (int i = 0; i < size; i++) {
+                result.elements[i] += this->elements[i];
+            }
+            return result;
+        }
+
+        Vec operator-(const Vec& other) {
+            auto result = other;
+            for (int i = 0; i < size; i++) {
+                result.elements[i] -= this->elements[i];
+            }
+            return result;
+        }
+
+        /*template <class U>
+        Vec operator*(U& other)
+        {
+            auto result = *this;
+            for (auto& element : result.elements) {
+                element *= static_cast<T>(other);
+            }
+            return result;
+        }*/
+
+        Vec operator*(double scalar) {
+            Vec result = *this;
+            for (auto& element : result.elements) {
+                element *= static_cast<T>(scalar);
+            }
+            return result;
+        }
+        
+        bool operator==(const Vec& other) {
+            return this->elements == other.elements;
+        }
+
+        T& operator[](int index) {
+            return this->elements[index];
+        }
+
+        const T& operator[](int index) const {
+            return this->elements[index];
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const Vec& obj) {
+            std::cout << "{ ";
+            for (const auto& element : obj.elements) {
+                // C++17 constexpr if
+                if constexpr (std::is_integral_v<T>) {
+                    std::cout << int(element) << " ";
+                } else if constexpr (std::is_floating_point_v<T>) {
+                    std::cout << float(element) << " ";
                 }
             }
+            std::cout << "}";
+            return os;
+        }
+    };
 
-            Vec() {
-                //std::cout <<"Vec() constructor called" << std::endl;
-                for (auto& element : this->elements) {
-                    element = static_cast<T>(0);
-                }
-            }
 
-            Vec operator+(const Vec& other) {
-                auto result = other;
-                for (int i = 0; i < size; i++) {
-                    result.elements[i] += this->elements[i];
-                }
-                return result;
-            }
 
-            Vec operator-(const Vec& other) {
-                auto result = other;
-                for (int i = 0; i < size; i++) {
-                    result.elements[i] -= this->elements[i];
-                }
-                return result;
-            }
+// a vector that holds information about coordinate system
+template <CoordinateSystem CS, class ElementT, int dimension>
+class CSVec : public Vec<ElementT,dimension> {
+    public:
+    CSVec() {
+        //std::cout <<"CSVec() constructor called" << std::endl;
+    }
+    CSVec(std::initializer_list<double> list) : Vec<ElementT,dimension>(list) {
+        //std::cout <<"CSVec{initializer_list} constructor called" << std::endl;
+    }
 
-            /*template <class U>
-            Vec operator*(U& other)
-            {
-                auto result = *this;
-                for (auto& element : result.elements) {
-                    element *= static_cast<T>(other);
-                }
-                return result;
-            }*/
+    CSVec(Vec<ElementT, dimension>& vec) {
+        std::cout << "CSVec(Vec) called" << std::endl;
+        this->elements = vec.elements;
+    }
 
-            Vec operator*(double scalar) {
-                Vec result = *this;
-                for (auto& element : result.elements) {
-                    element *= static_cast<T>(scalar);
-                }
-                return result;
-            }
-            
-            bool operator==(const Vec& other) {
-                return this->elements == other.elements;
-            }
+    template <CoordinateSystem SourceCS>
+    CSVec(const CSVec<SourceCS, ElementT, dimension>& from_vec) {
+        Convert<SourceCS, CS>(*this, from_vec);
+    }
 
-            T& operator[](int index) {
-                return this->elements[index];
-            }
+    // modify in-place
+    template <CoordinateSystem SourceCS, CoordinateSystem TargetCS>
+    static void Convert(      CSVec<TargetCS, ElementT, dimension>& target,
+                        const CSVec<SourceCS, ElementT, dimension>& source) {
+        if constexpr (dimension != 3) {
+            // only 3D currently supported
+            // TODO use static_assert? But win for some reason doesn't even compile
+            assert(false);
+        }
 
-            const T& operator[](int index) const {
-                return this->elements[index];
-            }
+        if constexpr (TargetCS == SourceCS) {
+            return;
+        }
+        if constexpr (
+            TargetCS == CoordinateSystem::SPHERICAL &&
+            SourceCS == CoordinateSystem::CARTESIAN
+        ) {
+            // convert CARTESIAN to SPHERICAL
+            assert(false); // TODO
+            return;
+        } else if constexpr (
+            TargetCS == CoordinateSystem::CARTESIAN &&
+            SourceCS == CoordinateSystem::SPHERICAL
+        ) {
+            // convert SPHERICAL to CARTESIAN 
+            auto phi = target.elements[0] * M_PI / 180;
+            auto theta = target.elements[1] * M_PI / 180;
+            auto r = target.elements[2];
 
-            friend std::ostream& operator<<(std::ostream& os, const Vec& obj) {
-                std::cout << "{ ";
-                for (const auto& element : obj.elements) {
-                    // C++17 constexpr if
-                    if constexpr (std::is_integral_v<T>) {
-                        std::cout << int(element) << " ";
-                    } else if constexpr (std::is_floating_point_v<T>) {
-                        std::cout << float(element) << " ";
-                    }
-                }
-                std::cout << "}";
-                return os;
-            }
-        };
+            auto x = r * sin(phi) * cos(theta);
+            auto y = r * sin(phi) * sin(theta);
+            auto z = r * cos(phi);
 
-        using Color = Vec<uint8_t, 4>;
-        const auto black = Color{0,0,0,255};
-        const auto white = Color{255,255,255,255};
+            target.elements[0] = x;
+            target.elements[1] = y;
+            target.elements[2] = z;
 
-        enum class CoordinateSystem {
-            SPHERICAL,
-            CARTESIAN,
-            POLAR,
-        };
+            return;
+        }
+    }
 
-        // a vector that holds information about coordinate system
-        template <CoordinateSystem CS, class ElementT, int dimension>
-        class CSVec : public Vec<ElementT,dimension> {
-            public:
-            CSVec() {
-                //std::cout <<"CSVec() constructor called" << std::endl;
-            }
-            CSVec(std::initializer_list<double> list) : Vec<ElementT,dimension>(list) {
-                //std::cout <<"CSVec{initializer_list} constructor called" << std::endl;
-            }
+};
 
-            CSVec(Vec<ElementT, dimension>& vec) {
-                std::cout << "CSVec(Vec) called" << std::endl;
-                this->elements = vec.elements;
-            }
 
-            template <CoordinateSystem SourceCS>
-            CSVec(CSVec<SourceCS, ElementT, dimension>& vec) {
-                if constexpr (SourceCS != CS) {
-                  // TODO convert
-                  std::cout << "Incorrect CS type" << std::endl;
-                }
-                std::cout << "CSVec(CSVec) called" << std::endl;
-                this->elements = vec.elements;//std::move(vec.elements);
-            }
-
-            template <CoordinateSystem TargetCS>
-            inline CSVec<TargetCS, ElementT, dimension> Convert() {
-                if constexpr (TargetCS == CS) {
-                    return *this;
-                }
-                if constexpr (TargetCS == CoordinateSystem::SPHERICAL) {
-                    // convert CARTESIAN to SPHERICAL
-                    assert(false);
-                    return CSVec<TargetCS, ElementT, dimension>();
-                } else if constexpr (dimension == 3) {
-                    // convert SPHERICAL to CARTESIAN 
-                    auto phi = this->elements[0] * M_PI / 180;
-                    auto theta = this->elements[1] * M_PI / 180;
-                    auto r = this->elements[2];
-
-                    auto x = r * sin(phi) * cos(theta);
-                    auto y = r * sin(phi) * sin(theta);
-                    auto z = r * cos(phi);
-
-                    return CSVec<TargetCS, ElementT, dimension>{x,y,z};
-                }
-            }
-        };
-
-        using SimCoords = utils::Vec<int32_t, 3>;
+ 
 
 template<class T, int dim>
 Vec<T,dim> CrossProduct(Vec<T,dim>& a, Vec<T,dim>& b) {
@@ -179,4 +201,16 @@ Vec<T,dim> CrossProduct(Vec<T,dim>& a, Vec<T,dim>& b) {
     }
     return result;
 }
+
+/*
+ * Helper classes and utils
+ */
+
+
+using Color = Vec<uint8_t, 4>;
+using SimCoords = utils::Vec<int32_t, 3>;
+const auto black = Color{0,0,0,255};
+const auto white = Color{255,255,255,255};
+
+
 }

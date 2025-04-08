@@ -310,7 +310,7 @@ void Camera::TranslateRotateScene()
     using namespace utils;
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    auto eye_pos_cartesian = pos.Convert<utils::CoordinateSystem::CARTESIAN>();
+    auto eye_pos_cartesian = CSVec<CoordinateSystem::CARTESIAN, double, 3>(pos);
     auto up = CSVec<CoordinateSystem::CARTESIAN, double, 3>{ 0.0, 1.0, 0.0 };
     gluLookAt(eye_pos_cartesian[0],
               eye_pos_cartesian[1],
