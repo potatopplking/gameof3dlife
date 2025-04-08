@@ -12,7 +12,7 @@ namespace Log {
     };
 
     // Set logging level here
-    constexpr LevelTypes Level = LevelTypes::DEBUG;
+    constexpr LevelTypes Level = LevelTypes::INFO;
 
     template <LevelTypes FUNC_LEVEL, typename... Args>
     void _print(Args... args) {

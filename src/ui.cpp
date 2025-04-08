@@ -100,7 +100,7 @@ Window::Window(int width, int height) :
     window{ nullptr },
     context{ nullptr }
 {
-    std::cout << "Window constructor called\n";
+    Log::debug("Window constructor called");
     camera.pos[0] = -45.0;
     camera.pos[1] = 63.0;
     camera.pos[2] = 30.0;
@@ -112,13 +112,13 @@ Window::~Window()
     SDL_GL_DestroyContext(this->context);
     SDL_DestroyWindow(this->window);
     SDL_Quit();
-    std::cout << "Window destructor called\n";
+    Log::debug("Window destructor called");
 }
 
 int Window::Init()
 {
     if (SDL_Init(SDL_INIT_VIDEO) == false) {
-        std::cerr << "SDL could not initialize! Error: " << SDL_GetError() << std::endl;
+        Log::error("SDL could not initialize! Error: ", SDL_GetError());
         return 1;
     }
     this->window = SDL_CreateWindow(
@@ -128,21 +128,21 @@ int Window::Init()
 	SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
     );
     if (this->window == nullptr) {
-        std::cerr << "Window could not be created! Error: " << SDL_GetError() << std::endl;
+        Log::error("Window could not be created! Error: ", SDL_GetError());
         SDL_Quit();
         return 1;
     }
 
     this->context = SDL_GL_CreateContext(this->window);
     if (this->context == nullptr) {
-        std::cerr << "GL context could not be created! Error: " << SDL_GetError() << std::endl;
+        Log::error("GL context could not be created! Error: ", SDL_GetError());
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 1;
     }
 
     if (glewInit() != GLEW_OK) {
-        std::cerr << "GLEW init failed!" << std::endl;
+        Log::error("GLEW init failed!");
         SDL_GL_DestroyContext(this->context);
         SDL_DestroyWindow(window);
         SDL_Quit();
@@ -153,7 +153,7 @@ int Window::Init()
 
     this->renderer = SDL_CreateRenderer(window, NULL);
     if (this->renderer == nullptr) {
-        std::cerr << "Renderer could not be created! Error: " << SDL_GetError() << std::endl;
+        Log::error("Renderer could not be created! Error: ", SDL_GetError());
         SDL_DestroyWindow(this->window);
         SDL_Quit();
         return 1;
@@ -180,19 +180,19 @@ void Window::ProcessEvents()
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_EVENT_WINDOW_RESIZED: {
-                std::cout << "Window resized event" << std::endl;
+                Log::debug("Window resized event");
                 SDL_WindowEvent win = event.window;
                 auto new_size = utils::Vec<int,2>{win.data1, win.data2};
                 Resize(new_size);
                 break;
             }
 	        case SDL_EVENT_KEY_DOWN: {
-                std::cout << "Got key down\n";
+                Log::debug("Got key down");
                 SDL_KeyboardEvent kbd_event = event.key;
                 if (kbd_event.key == 'q') {
                     this->exit_requested = true;
                 } else if (kbd_event.key == 'r') {
-                    std::cout << "Reinitializing simulation..." << std::endl;
+                    Log::info("Reinitializing simulation...");
                     this->sim->InitRandomState();
                 }
                 break;
@@ -222,6 +222,7 @@ void Window::ProcessEvents()
                 } else if (mouse_event.state == SDL_BUTTON_MMASK) {
                     camera.SetPan(diff);   
                 }
+                Log::debug("Mouse motion event: ", diff[0], ", ", diff[1]);
                 mouse_prev_pos = mouse_current_pos;
                 break;
             }
@@ -331,15 +332,9 @@ void Camera::SetPan(MousePos diff)
     auto view_vector = this->lookAt - this->pos;
     auto imagePlaneX = utils::CrossProduct(view_vector, this->up);
     auto imagePlaneY = utils::CrossProduct(imagePlaneX, this->up);
-    std::cout << "view_vector: " << view_vector << std::endl;
-    std::cout << "this->pos: " << this->pos << std::endl;
-    std::cout << "this->lookAt: " << this->lookAt << std::endl;
-    std::cout << "this->up: " << this->up << std::endl;
-    std::cout << "imagePlaneX: " << imagePlaneX << std::endl;
-    std::cout << "imagePlaneY: " << imagePlaneY << std::endl;
     this->lookAt[0] += imagePlaneX[0] * diff[0] * 0.1;
     this->lookAt[1] += imagePlaneX[1] * diff[1] * 0.1;
-    std::cout << "SetPan called: (" << diff[0] << ", " << diff[1] << ")" << std::endl;
+    Log::debug("SetPan called: (", diff[0], ", ", diff[1], ")");
 }
 
 void Camera::SetRotation(MousePos diff)
@@ -353,7 +348,7 @@ void Camera::SetRotation(MousePos diff)
     auto [imagePlaneX, imagePlaneY] = this->GetProjectionPlaneBasis<utils::CoordinateSystem::SPHERICAL>();
     this->pos[0] += diff[0] * -0.1;
     this->pos[1] += diff[1] * -0.1;
-    std::cout << "SetRotation called: (" << diff[0] << ", " << diff[1] << ")" << std::endl;
+    Log::debug("SetRotation called: (", diff[0], ", ", diff[1], ")");
 }
 
 

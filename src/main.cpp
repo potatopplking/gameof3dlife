@@ -11,7 +11,7 @@
 
 int main(void)
 {
-    std::cout << "Press 'q' to quit\n";
+    Log::info("Press 'q' to quit");
 
     UI::Window window{ 800, 600 };
     window.Init();
