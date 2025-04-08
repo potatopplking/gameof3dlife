@@ -38,7 +38,7 @@ class Vec
         template <class U>
         Vec(std::initializer_list<U> list) {
             //std::cout <<"Vec{initializer_list} constructor called" << std::endl; // TODO debug output
-            assert(size >= list.size());
+            assert(size == list.size());
             //std:: cout << "Using std::initializer_list constructor" << std::endl;
             size_t i = 0;
             for (auto& l : list) {
@@ -91,6 +91,10 @@ class Vec
             return this->elements == other.elements;
         }
 
+        bool operator!=(const Vec& other) {
+            return !(this->operator==(other));
+        }
+
         T& operator[](int index) {
             return this->elements[index];
         }
@@ -117,7 +121,7 @@ class Vec
 
 
 // a vector that holds information about coordinate system
-template <CoordinateSystem CS, class ElementT, int dimension>
+template <CoordinateSystem CS, typename ElementT, int dimension>
 class CSVec : public Vec<ElementT,dimension> {
     public:
     CSVec() {
@@ -135,6 +139,26 @@ class CSVec : public Vec<ElementT,dimension> {
     template <CoordinateSystem SourceCS>
     CSVec(const CSVec<SourceCS, ElementT, dimension>& from_vec) {
         Convert<SourceCS, CS>(*this, from_vec);
+    }
+
+    // different coord system should return false, although elements
+    // are equal
+    template <CoordinateSystem OtherCS,
+             typename OtherElementT,
+             int OtherDimension>
+    bool operator==(const CSVec<OtherCS, OtherElementT, OtherDimension>& other) const {
+        if constexpr (
+                OtherCS == CS             &&
+                typeid(OtherElementT) == typeid(ElementT) &&
+                OtherDimension == dimension
+                ) {
+            // passthrough only if types are identical,
+            // explicit conversion is needed for comparison
+            // between coordinate systems
+            // TODO tady
+            return Vec<ElementT,dimension>::operator==(other);
+        }
+        return false;
     }
 
     // modify in-place
