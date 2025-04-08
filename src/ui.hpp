@@ -47,8 +47,9 @@ public:
 
 private:
 
+    // TODO normalize
     template <utils::CoordinateSystem CS>
-    std::array<utils::CSVec<CS, double, 3>,2> GetImagePlaneBasis() {
+    std::array<utils::CSVec<CS, double, 3>,2> GetProjectionPlaneBasis() {
         auto view_vector = this->lookAt - this->pos;
         auto imagePlaneX = utils::CrossProduct(view_vector, this->up);
         auto imagePlaneY = utils::CrossProduct(imagePlaneX, this->up);

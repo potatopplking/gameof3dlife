@@ -307,10 +307,10 @@ void Camera::SetPerspectiveProjection()
 
 void Camera::TranslateRotateScene()
 {
+    using namespace utils;
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     auto eye_pos_cartesian = pos.Convert<utils::CoordinateSystem::CARTESIAN>();
-    using namespace utils;
     auto up = CSVec<CoordinateSystem::CARTESIAN, double, 3>{ 0.0, 1.0, 0.0 };
     gluLookAt(eye_pos_cartesian[0],
               eye_pos_cartesian[1],
@@ -346,9 +346,11 @@ void Camera::SetRotation(MousePos diff)
 {
     // x movement [0] translates to pitch
     // y movement [1] translates to yaw
-    auto view_vector = this->lookAt - this->pos;
-    auto imagePlaneX = utils::CrossProduct(view_vector, this->up);
-    auto imagePlaneY = utils::CrossProduct(imagePlaneX, this->up);
+    //auto view_vector = this->lookAt - this->pos;
+    //auto imagePlaneX = utils::CrossProduct(view_vector, this->up);
+    //auto imagePlaneY = utils::CrossProduct(imagePlaneX, this->up);
+
+    auto [imagePlaneX, imagePlaneY] = this->GetProjectionPlaneBasis<utils::CoordinateSystem::SPHERICAL>();
     this->pos[0] += diff[0] * -0.1;
     this->pos[1] += diff[1] * -0.1;
     std::cout << "SetRotation called: (" << diff[0] << ", " << diff[1] << ")" << std::endl;

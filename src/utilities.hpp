@@ -110,7 +110,7 @@ namespace utils
         };
 
         // a vector that holds information about coordinate system
-        template <CoordinateSystem T, class ElementT, int dimension>
+        template <CoordinateSystem CS, class ElementT, int dimension>
         class CSVec : public Vec<ElementT,dimension> {
             public:
             CSVec() {
@@ -120,15 +120,30 @@ namespace utils
                 //std::cout <<"CSVec{initializer_list} constructor called" << std::endl;
             }
 
-            template <CoordinateSystem Dest_T>
-            inline CSVec<Dest_T, ElementT, dimension> Convert() {
-                if constexpr (Dest_T == T) {
+            CSVec(Vec<ElementT, dimension>& vec) {
+                std::cout << "CSVec(Vec) called" << std::endl;
+                this->elements = vec.elements;
+            }
+
+            template <CoordinateSystem SourceCS>
+            CSVec(CSVec<SourceCS, ElementT, dimension>& vec) {
+                if constexpr (SourceCS != CS) {
+                  // TODO convert
+                  std::cout << "Incorrect CS type" << std::endl;
+                }
+                std::cout << "CSVec(CSVec) called" << std::endl;
+                this->elements = vec.elements;//std::move(vec.elements);
+            }
+
+            template <CoordinateSystem TargetCS>
+            inline CSVec<TargetCS, ElementT, dimension> Convert() {
+                if constexpr (TargetCS == CS) {
                     return *this;
                 }
-                if constexpr (Dest_T == CoordinateSystem::SPHERICAL) {
+                if constexpr (TargetCS == CoordinateSystem::SPHERICAL) {
                     // convert CARTESIAN to SPHERICAL
                     assert(false);
-                    return CSVec<Dest_T, ElementT, dimension>();
+                    return CSVec<TargetCS, ElementT, dimension>();
                 } else if constexpr (dimension == 3) {
                     // convert SPHERICAL to CARTESIAN 
                     auto phi = this->elements[0] * M_PI / 180;
@@ -139,7 +154,7 @@ namespace utils
                     auto y = r * sin(phi) * sin(theta);
                     auto z = r * cos(phi);
 
-                    return CSVec<Dest_T, ElementT, dimension>{x,y,z};
+                    return CSVec<TargetCS, ElementT, dimension>{x,y,z};
                 }
             }
         };
