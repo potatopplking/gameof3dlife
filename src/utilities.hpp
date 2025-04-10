@@ -26,6 +26,21 @@ enum class CoordinateSystem {
     POLAR,
 };
 
+
+enum class SphericalIndex {
+  // physics convention (ISO 80000-2:2019)
+  // https://en.wikipedia.org/wiki/Spherical_coordinate_system
+  R = 0,
+  THETA,
+  PHI
+};
+
+enum class CartesianIndex {
+  X = 0,
+  Y,
+  Z
+};
+
 /*
  * Classes
  */
@@ -39,7 +54,7 @@ class Vec
 
         template <class U>
         Vec(std::initializer_list<U> list) {
-            Log::debug("Vec{initializer_list} constructor called" );
+            Log::profiling_debug("Vec{initializer_list} constructor called" );
             assert(size == list.size());
             //std:: cout );
             size_t i = 0;
@@ -49,14 +64,14 @@ class Vec
         }
 
         Vec() {
-            Log::debug("Vec() constructor called" );
+            Log::profiling_debug("Vec() constructor called" );
             for (auto& element : this->elements) {
                 element = static_cast<T>(0);
             }
         }
 
         Vec operator+(const Vec& other) {
-            Log::debug("Vec::operator+" );
+//            Log::profiling_debug("Vec::operator+" );
             auto result = other;
             for (int i = 0; i < size; i++) {
                 result.elements[i] += this->elements[i];
@@ -65,7 +80,7 @@ class Vec
         }
 
         Vec operator-(const Vec& other) {
-            Log::debug("Vec::operator+" );
+//            Log::profiling_debug("Vec::operator+" );
             auto result = other;
             for (int i = 0; i < size; i++) {
                 result.elements[i] -= this->elements[i];
@@ -84,7 +99,7 @@ class Vec
         }*/
 
         Vec operator*(double scalar) {
-            Log::debug("Vec::operator*" );
+            //Log::profiling_debug("Vec::operator*" );
             Vec result = *this;
             for (auto& element : result.elements) {
                 element *= static_cast<T>(scalar);
@@ -93,22 +108,22 @@ class Vec
         }
         
         bool operator==(const Vec& other) {
-            Log::debug("Vec::operator==" );
+            //Log::profiling_debug("Vec::operator==" );
             return this->elements == other.elements;
         }
 
         bool operator!=(const Vec& other) {
-            Log::debug("Vec::operator!=" );
+            //Log::profiling_debug("Vec::operator!=" );
             return !(this->operator==(other));
         }
 
         T& operator[](int index) {
-            Log::debug("Vec::operator[]" );
+            //Log::profiling_debug("Vec::operator[]" );
             return this->elements[index];
         }
 
         const T& operator[](int index) const {
-            Log::debug("Vec::operator[] const" );
+            //Log::profiling_debug("Vec::operator[] const" );
             return this->elements[index];
         }
 
@@ -134,25 +149,27 @@ template <CoordinateSystem CS, typename ElementT, int dimension>
 class CSVec : public Vec<ElementT,dimension> {
     public:
     CSVec() {
-        Log::debug("CSVec() constructor called" );
+        Log::profiling_debug("CSVec() constructor called" );
     }
     CSVec(std::initializer_list<double> list) : Vec<ElementT,dimension>(list) {
-        Log::debug("CSVec{initializer_list} constructor called" );
+        // order must be as given in SphericalIndex or CartesianIndex
+        Log::profiling_debug("CSVec{initializer_list} constructor called" );
     }
 
     CSVec(Vec<ElementT, dimension>& vec) {
-        Log::debug( "CSVec(Vec) called" );
+        // order must be as given in SphericalIndex or CartesianIndex
+        Log::profiling_debug( "CSVec(Vec) called" );
         this->elements = vec.elements;
     }
 
     template <CoordinateSystem SourceCS>
     CSVec(const CSVec<SourceCS, ElementT, dimension>& from_vec) {
-        Log::debug( "CSVec(CSVec)" );
-        // Log::debug( "CSVec(CSVec): CS = ", CS );
-        // Log::debug( "CSVec(CSVec): SourceCS = ", SourceCS );
-        // Log::debug( "CSVec(CSVec): dimension = ", dimension );
+        Log::profiling_debug( "CSVec(CSVec)" );
+        // Log::profiling_debug( "CSVec(CSVec): CS = ", CS );
+        // Log::profiling_debug( "CSVec(CSVec): SourceCS = ", SourceCS );
+        // Log::profiling_debug( "CSVec(CSVec): dimension = ", dimension );
         Convert<SourceCS, CS>(*this, from_vec);
-        Log::debug( "CSVec(CSVec): Convert done, src = ",  from_vec, " dst = ", *this );
+        Log::profiling_debug( "CSVec(CSVec): Convert done, src = ",  from_vec, " dst = ", *this );
     }
 
     // different coord system should return false, although elements
@@ -161,7 +178,7 @@ class CSVec : public Vec<ElementT,dimension> {
              typename OtherElementT,
              int OtherDimension>
     bool operator==(const CSVec<OtherCS, OtherElementT, OtherDimension>& other) {
-        Log::debug( "CSVec::operator==" );
+//        Log::profiling_debug( "CSVec::operator==" );
         if constexpr (
                 OtherCS == CS &&
                 std::is_same_v<OtherElementT, ElementT> &&
@@ -186,7 +203,7 @@ class CSVec : public Vec<ElementT,dimension> {
     template <CoordinateSystem SourceCS, CoordinateSystem TargetCS>
     static void Convert(      CSVec<TargetCS, ElementT, dimension>& target,
                         const CSVec<SourceCS, ElementT, dimension>& source) {
-        Log::debug( "CSVec::Convert" );
+        Log::profiling_debug( "CSVec::Convert" );
         if constexpr (dimension != 3) {
             // only 3D currently supported
             // TODO use static_assert? But win for some reason doesn't even compile
@@ -195,7 +212,7 @@ class CSVec : public Vec<ElementT,dimension> {
         }
 
         if constexpr (TargetCS == SourceCS) {
-            Log::debug( "CSVec::Convert: TargetCS == SourceCS" );
+            Log::profiling_debug( "CSVec::Convert: TargetCS == SourceCS" );
             // no conversion needed
             return;
         }
@@ -204,38 +221,36 @@ class CSVec : public Vec<ElementT,dimension> {
             SourceCS == CoordinateSystem::CARTESIAN
         ) {
             // convert CARTESIAN to SPHERICAL
-            Log::debug( "CSVec::Convert: from CARTESIAN to SPHERICAL" );
+            Log::profiling_debug( "CSVec::Convert: from CARTESIAN to SPHERICAL" );
 
-            auto [x, y, z] = source.elements;
+            auto x = source.elements[CartesianIndex::X];
+            auto y = source.elements[CartesianIndex::Y];
+            auto z = source.elements[CartesianIndex::Z];
 
             auto r = std::sqrt(x * x + y * y + z * z);
-            auto phi = std::atan2(std::sqrt(x * x + y * y), z) * 180 / M_PI;
-            auto theta = std::atan2(y, x) * 180 / M_PI;
-            // TODO use radians you dum dum
-            target.elements[0] = phi;
-            target.elements[1] = theta;
-            target.elements[2] = r;
+            auto phi = std::atan2(std::sqrt(x * x + y * y), z);
+            auto theta = std::atan2(y, x);
 
-            return;
+            target.elements[SphericalIndex::R] = r;
+            target.elements[SphericalIndex::THETA] = theta;
+            target.elements[SphericalIndex::PHI] = phi;
         } else if constexpr (
             TargetCS == CoordinateSystem::CARTESIAN &&
             SourceCS == CoordinateSystem::SPHERICAL
         ) {
-            Log::debug( "CSVec::Convert: from SPHERICAL to CARTESIAN" );
+            Log::profiling_debug( "CSVec::Convert: from SPHERICAL to CARTESIAN" );
             // convert SPHERICAL to CARTESIAN 
-            auto phi = source.elements[0] * M_PI / 180;
-            auto theta = source.elements[1] * M_PI / 180;
-            auto r = source.elements[2];
+            auto phi = source.elements[CartesianIndex::X];
+            auto theta = source.elements[CartesianIndex::Y];
+            auto r = source.elements[CartesianIndex::Z];
 
             auto x = r * sin(phi) * cos(theta);
             auto y = r * sin(phi) * sin(theta);
             auto z = r * cos(phi);
 
-            target.elements[0] = x;
-            target.elements[1] = y;
-            target.elements[2] = z;
-
-            return;
+            target.elements[CartesianIndex::X] = x;
+            target.elements[CartesianIndex::Y] = y;
+            target.elements[CartesianIndex::Z] = z;
         }
     }
 

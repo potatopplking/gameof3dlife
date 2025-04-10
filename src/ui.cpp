@@ -316,9 +316,10 @@ void Camera::TranslateRotateScene()
     gluLookAt(eye_pos_cartesian[0],
               eye_pos_cartesian[1],
               eye_pos_cartesian[2],
-              this->lookAt[0],
-              this->lookAt[1],
-              this->lookAt[2],
+              0.0, 0.0, 0.0, // "look at" point always zero
+//              this->lookAt[0],
+//              this->lookAt[1],
+//              this->lookAt[2],
               up[0], up[1], up[2]);
 }
 
@@ -345,10 +346,14 @@ void Camera::SetRotation(MousePos diff)
     //auto imagePlaneX = utils::CrossProduct(view_vector, this->up);
     //auto imagePlaneY = utils::CrossProduct(imagePlaneX, this->up);
 
-    auto [imagePlaneX, imagePlaneY] = this->GetProjectionPlaneBasis<utils::CoordinateSystem::SPHERICAL>();
+//    auto [imagePlaneX, imagePlaneY] = this->GetProjectionPlaneBasis<utils::CoordinateSystem::SPHERICAL>();
     this->pos[0] += diff[0] * -0.1;
     this->pos[1] += diff[1] * -0.1;
     Log::debug("SetRotation called: (", diff[0], ", ", diff[1], ")");
+    using namespace utils;
+    auto eye_pos_cartesian = CSVec<CoordinateSystem::CARTESIAN, double, 3>(pos);
+    Log::debug("pos spherical:", pos);
+    Log::debug("pos cartesian:", eye_pos_cartesian);
 }
 
 

@@ -41,18 +41,15 @@ int main(void)
     CSVec<CoordinateSystem::CARTESIAN, double, 3> null_cartesian;
     CSVec<CoordinateSystem::SPHERICAL, double, 3> null_spherical_from_cartesian(null_cartesian);
     assert(null_spherical_from_cartesian == null_spherical_from_cartesian);
-    // conversion between coordinate systems
-    CSVec<CoordinateSystem::CARTESIAN, double, 3> cartesian{12.0, 34.0, 56.0};
-    CSVec<CoordinateSystem::SPHERICAL, double, 3> spherical(cartesian);
-    assert(double_equal(spherical[0], 32.77539683)); // phi
-    assert(double_equal(spherical[1], 70.55996517)); // theta
-    assert(double_equal(spherical[2], 66.60330322)); // r
-    // other way around
-    CSVec<CoordinateSystem::CARTESIAN, double, 3> cartesian2(spherical);
-    // std::cout << Vec(cartesian2) << std::endl;
-    assert(double_equal(cartesian2[0], 12.0)); // x
-    assert(double_equal(cartesian2[1], 34.0)); // y
-    assert(double_equal(cartesian2[2], 56.0)); // z
+    // X Y Z verification
+    CSVec<CoordinateSystem::SPHERICAL, double, 3> spherical_z{1.0, 0.0, 0.0};
+    CSVec<CoordinateSystem::CARTESIAN, double, 3> cartesian_z{0.0, 0.0, 1.0};
+    CSVec<CoordinateSystem::CARTESIAN, double, 3> cartesian_z_converted(spherical_z);
+    // 
+    Log::debug("Spherical to cartesian test");
+    Log::debug(spherical_z, " -> ", cartesian_z);
+    Log::debug(spherical_z, " -> ", cartesian_z_converted);
+    assert(cartesian_z == cartesian_z_converted);
 
 //    CSVec<CoordinateSystem::CARTESIAN, double, 3> lol{1.0,2.0,3.0};
 //    CSVec<CoordinateSystem::CARTESIAN, double, 3> rofl(lol);

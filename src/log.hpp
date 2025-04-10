@@ -9,10 +9,11 @@ namespace Log {
         WARNING,      // Minor inconvenience
         INFO,         // Normal stuff
         DEBUG,        // Everything. Will slow down execution
+        PROFILING_DEBUG, // including constructors etc.
     };
 
     // Set logging level here
-    constexpr LevelTypes Level = LevelTypes::INFO;
+    constexpr LevelTypes Level = LevelTypes::DEBUG;
 
     template <LevelTypes FUNC_LEVEL, typename... Args>
     void _print(Args... args) {
@@ -47,4 +48,8 @@ namespace Log {
         _print<LevelTypes::DEBUG>(args...);
     } 
 
+    template <typename... Args>
+    void profiling_debug(Args... args) {
+        _print<LevelTypes::PROFILING_DEBUG>(args...);
+    } 
 }
