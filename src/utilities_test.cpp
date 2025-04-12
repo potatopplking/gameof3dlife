@@ -12,6 +12,24 @@ bool double_equal(double a, double b) {
     return std::abs(a - b) < 1e-6;
 }
 
+void test_CSVec(
+        CSVec<CoordinateSystem::SPHERICAL, double, 3> spherical,
+        CSVec<CoordinateSystem::CARTESIAN, double, 3> cartesian
+) {
+    CSVec<CoordinateSystem::CARTESIAN, double, 3> cartesian_converted(spherical);
+    CSVec<CoordinateSystem::SPHERICAL, double, 3> spherical_converted(cartesian);
+    Log::debug(spherical, " -> ", cartesian_converted, " (correct value is ", cartesian, ")");
+    assert(spherical == spherical_converted);
+    Log::debug(cartesian, " -> ", spherical_converted, " (correct value is ", spherical, ")");
+    assert(cartesian == cartesian_converted);
+    // TODO wip nekde tady
+    Log::debug(cartesian, " -> ", spherical_converted, " (correct value is ", spherical, ")");
+    CSVec<CoordinateSystem::SPHERICAL, double, 3> spherical_backconverted(cartesian_converted);
+    assert(spherical_backconverted == spherical);
+    CSVec<CoordinateSystem::CARTESIAN, double, 3> cartesian_backconverted(spherical_converted);
+    assert(cartesian_backconverted == cartesian);
+}
+
 int main(void)
 {
     // Vec class
@@ -47,17 +65,20 @@ int main(void)
     // See https://en.wikipedia.org/wiki/Spherical_coordinate_system, image with physical convention
     Log::debug("Spherical to cartesian test");
     // R = 1, both angles zero -> [0,0,1]
-    CSVec<CoordinateSystem::SPHERICAL, double, 3> spherical_z{1.0, 0.0, 0.0};
-    CSVec<CoordinateSystem::CARTESIAN, double, 3> cartesian_z{0.0, 0.0, 1.0};
-    CSVec<CoordinateSystem::CARTESIAN, double, 3> cartesian_z_converted(spherical_z);
-    Log::debug(spherical_z, " -> ", cartesian_z_converted, " (correct value is ", cartesian_z, ")");
-    assert(cartesian_z == cartesian_z_converted);
+    test_CSVec(
+        CSVec<CoordinateSystem::SPHERICAL, double, 3>{1.0, 0.0, 0.0},
+        CSVec<CoordinateSystem::CARTESIAN, double, 3>{0.0, 0.0, 1.0}
+    );
     // R = 1, theta = pi/2 -> [1,0,0]
-    CSVec<CoordinateSystem::SPHERICAL, double, 3> spherical_x{1.0, M_PI/2.0, 0.0};
-    CSVec<CoordinateSystem::CARTESIAN, double, 3> cartesian_x{1.0, 0.0, 0.0};
-    CSVec<CoordinateSystem::CARTESIAN, double, 3> cartesian_x_converted(spherical_x);
-    Log::debug(spherical_x, " -> ", cartesian_x_converted, " (correct value is ", cartesian_x, ")");
-    assert(cartesian_x == cartesian_x_converted);
+    test_CSVec(
+        CSVec<CoordinateSystem::SPHERICAL, double, 3>{1.0, M_PI/2.0, 0.0},
+        CSVec<CoordinateSystem::CARTESIAN, double, 3>{1.0, 0.0, 0.0}
+    );
+    // R = 1, theta = pi/2, phi = pi/2 -> [0, 1, 0]
+    test_CSVec(
+        CSVec<CoordinateSystem::SPHERICAL, double, 3>{1.0, M_PI/2.0, M_PI/2.0},
+        CSVec<CoordinateSystem::CARTESIAN, double, 3>{0.0, 1.0, 0.0}
+    );
     //
 
 //    CSVec<CoordinateSystem::CARTESIAN, double, 3> lol{1.0,2.0,3.0};
