@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cmath>
+#include <ranges>
 #include <cassert>
 #include <cstdint>
 #include <iostream>
@@ -49,6 +50,12 @@ enum class CartesianIndex {
 template<typename T, int size>
 class Vec
 {
+    private:
+        inline bool equal(T a, T b) {
+            constexpr T MAX_DIFF = static_cast<T>(1e-6);
+            return std::abs(a-b) <= MAX_DIFF;
+        }
+
     public:
         std::array<T, size> elements;
 
@@ -109,7 +116,15 @@ class Vec
         
         bool operator==(const Vec& other) {
             //Log::profiling_debug("Vec::operator==" );
-            return this->elements == other.elements;
+            auto zipped = std::ranges::views::zip(this->elements, other.elements);
+            // TODO how well is this optimized? Is it vectorized?
+            for (auto [a,b] : zipped) {
+                if (!this->equal(a, b)) {
+                    return false;
+                }
+            }
+            return true;
+            //return this->elements == other.elements;
         }
 
         bool operator!=(const Vec& other) {
@@ -260,9 +275,9 @@ class CSVec : public Vec<ElementT,dimension> {
             auto theta = source[SphericalIndex::THETA];
             auto r = source[SphericalIndex::R];
 
-            auto x = r * sin(phi) * cos(theta);
-            auto y = r * sin(phi) * sin(theta);
-            auto z = r * cos(phi);
+            auto x = r * sin(theta) * cos(phi);
+            auto y = r * sin(theta) * sin(phi);
+            auto z = r * cos(theta);
 
             target[CartesianIndex::X] = x;
             target[CartesianIndex::Y] = y;
