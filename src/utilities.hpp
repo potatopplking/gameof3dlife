@@ -11,7 +11,7 @@
   #define M_PI std::numbers::pi
 #endif
 
-#include "Log.hpp"
+#include "log.hpp"
 
 namespace utils
 {
@@ -192,6 +192,21 @@ class CSVec : public Vec<ElementT,dimension> {
         return false;
     }
 
+    template<typename IndexT>
+    ElementT& operator[](IndexT index) {
+        return const_cast<ElementT&>(static_cast<const CSVec&>(*this)[index]);
+    }
+
+    template <typename IndexT>
+    const ElementT& operator[](IndexT index) const {
+        if constexpr (std::is_same<IndexT, CartesianIndex>::value) {
+            static_assert(CS == CoordinateSystem::CARTESIAN, "Attempted to access cartesian vector using non-cartesian index");
+        } else if constexpr (std::is_same<IndexT, SphericalIndex>::value) {
+            static_assert(CS == CoordinateSystem::SPHERICAL, "Attempted to access spherical vector using non-spherical index");
+        }
+        return this->elements[static_cast<uint32_t>(index)];
+    }
+
     template <CoordinateSystem OtherCS,
              typename OtherElementT,
              int OtherDimension>
@@ -207,6 +222,7 @@ class CSVec : public Vec<ElementT,dimension> {
         if constexpr (dimension != 3) {
             // only 3D currently supported
             // TODO use static_assert? But win for some reason doesn't even compile
+            //      maybe because we need 2 arguments, second is string with error description?
             Log::critical("CSVec::Convert: dimension != 3");
             assert(false);
         }
@@ -223,34 +239,34 @@ class CSVec : public Vec<ElementT,dimension> {
             // convert CARTESIAN to SPHERICAL
             Log::profiling_debug( "CSVec::Convert: from CARTESIAN to SPHERICAL" );
 
-            auto x = source.elements[CartesianIndex::X];
-            auto y = source.elements[CartesianIndex::Y];
-            auto z = source.elements[CartesianIndex::Z];
+            auto x = source[CartesianIndex::X];
+            auto y = source[CartesianIndex::Y];
+            auto z = source[CartesianIndex::Z];
 
             auto r = std::sqrt(x * x + y * y + z * z);
             auto phi = std::atan2(std::sqrt(x * x + y * y), z);
             auto theta = std::atan2(y, x);
 
-            target.elements[SphericalIndex::R] = r;
-            target.elements[SphericalIndex::THETA] = theta;
-            target.elements[SphericalIndex::PHI] = phi;
+            target[SphericalIndex::R] = r;
+            target[SphericalIndex::THETA] = theta;
+            target[SphericalIndex::PHI] = phi;
         } else if constexpr (
             TargetCS == CoordinateSystem::CARTESIAN &&
             SourceCS == CoordinateSystem::SPHERICAL
         ) {
             Log::profiling_debug( "CSVec::Convert: from SPHERICAL to CARTESIAN" );
             // convert SPHERICAL to CARTESIAN 
-            auto phi = source.elements[CartesianIndex::X];
-            auto theta = source.elements[CartesianIndex::Y];
-            auto r = source.elements[CartesianIndex::Z];
+            auto phi = source[SphericalIndex::PHI];
+            auto theta = source[SphericalIndex::THETA];
+            auto r = source[SphericalIndex::R];
 
             auto x = r * sin(phi) * cos(theta);
             auto y = r * sin(phi) * sin(theta);
             auto z = r * cos(phi);
 
-            target.elements[CartesianIndex::X] = x;
-            target.elements[CartesianIndex::Y] = y;
-            target.elements[CartesianIndex::Z] = z;
+            target[CartesianIndex::X] = x;
+            target[CartesianIndex::Y] = y;
+            target[CartesianIndex::Z] = z;
         }
     }
 
