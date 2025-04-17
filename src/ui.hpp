@@ -26,9 +26,6 @@ class Camera
 
 public:
     Camera() : 
-        up{     0.0, 0.0, 0.0 },
-        pos{    0.0, 0.0, 0.0 },
-        lookAt{ 0.0, 0.0, 0.0 },
         aspect{ 0 }
     {}
     ~Camera() = default;
@@ -45,6 +42,7 @@ public:
     double aspect;
     utils::CSVec<CS::CARTESIAN, double, 3> lookAt;
     utils::CSVec<CS::CARTESIAN, double, 3> up;
+    utils::CSVec<CS::CARTESIAN, double, 3> offset;
     utils::CSVec<CS::SPHERICAL, double, 3> pos; // TODO move to private
 
 private:
@@ -92,6 +90,7 @@ class Window
         void ClearWindow(utils::Color c);
         void UpdateSimulation();
         void Render(const std::vector<Voxel>& voxels);
+        void DrawAxis();
         void Flush();
         void Resize();
 };

@@ -142,6 +142,18 @@ class Vec
             return this->elements[index];
         }
 
+        void Normalize() {
+          T sum = 0;
+          for (auto& elem : this->elements) {
+            sum += elem*elem;
+          }
+          T coeff = sqrt(sum);
+
+          for (auto& elem : this->elements) {
+            elem /= coeff;
+          }
+        }
+
         friend std::ostream& operator<<(std::ostream& os, const Vec& obj) {
             std::cout << "{ ";
             for (const auto& element : obj.elements) {
@@ -301,7 +313,7 @@ class CSVec : public Vec<ElementT,dimension> {
 };
 
 
- 
+
 
 template<class T, int dim>
 Vec<T,dim> CrossProduct(Vec<T,dim>& a, Vec<T,dim>& b) {

@@ -203,9 +203,9 @@ void Window::ProcessEvents()
                 } else if (kbd_event.key == 'r') {
                     Log::info("Reinitializing simulation...");
                     this->sim->InitRandomState();
-                } else if (kbd_event.key == 'w') {
-                    this->camera.SetZoom(1);
                 } else if (kbd_event.key == 's') {
+                    this->camera.SetZoom(1);
+                } else if (kbd_event.key == 'w') {
                     this->camera.SetZoom(-1);
                 }
                 break;
@@ -284,8 +284,24 @@ void Window::Render(const std::vector<Voxel>& voxels) {
         glColor3ub(R,G,B);
         draw_cube(voxel.position);
     }
+    DrawAxis();
     enable_light();
     this->Flush();
+}
+
+void Window::DrawAxis() {
+    constexpr double length = 100.0;
+    glBegin(GL_LINES);
+        glColor3f(1.0, 0.0, 0.0);
+        glVertex3f(0.0, 0.0, 0.0);
+        glVertex3f(length, 0.0, 0.0);
+        glColor3f(0.0, 1.0, 0.0);
+        glVertex3f(0.0, 0.0, 0.0);
+        glVertex3f(0.0, length, 0.0);
+        glColor3f(0.0, 0.0, 1.0);
+        glVertex3f(0.0, 0.0, 0.0);
+        glVertex3f(0.0, 0.0, length);
+    glEnd();
 }
 
 void Window::Flush()
@@ -326,13 +342,14 @@ void Camera::TranslateRotateScene()
     glLoadIdentity();
     auto eye_pos_cartesian = CSVec<CoordinateSystem::CARTESIAN, double, 3>(pos);
     //auto up = CSVec<CoordinateSystem::CARTESIAN, double, 3>{ 0.0, 1.0, 0.0 };
-    gluLookAt(eye_pos_cartesian[0],
-              eye_pos_cartesian[1],
-              eye_pos_cartesian[2],
-              0.0, 0.0, 0.0, // "look at" point always zero
-//              this->lookAt[0],
-//              this->lookAt[1],
-//              this->lookAt[2],
+    auto eye_pos = CSVec<CoordinateSystem::CARTESIAN, double, 3>(pos) + offset;
+    auto look_at = lookAt + offset;
+    gluLookAt(eye_pos[0],
+              eye_pos[1],
+              eye_pos[2],
+              look_at[0],
+              look_at[1],
+              look_at[2],
               up[0], up[1], up[2]);
 }
 
@@ -343,11 +360,16 @@ void Camera::SetZoom(float scroll_diff)
 
 void Camera::SetPan(MousePos diff)
 {
-    auto view_vector = this->lookAt - this->pos;
-    auto imagePlaneX = utils::CrossProduct(view_vector, this->up);
-    auto imagePlaneY = utils::CrossProduct(imagePlaneX, this->up);
-    this->lookAt[0] += imagePlaneX[0] * diff[0] * 0.1;
-    this->lookAt[1] += imagePlaneX[1] * diff[1] * 0.1;
+    using namespace utils;
+    auto pos_cartesian = CSVec<CoordinateSystem::CARTESIAN, double, 3>(this->pos);
+    auto view_vector = this->lookAt - pos_cartesian;
+    auto imagePlaneX = CrossProduct(view_vector, this->up);
+    auto imagePlaneY = CrossProduct(imagePlaneX, this->up);
+    imagePlaneX.Normalize();
+    imagePlaneY.Normalize();
+    this->offset[0] += imagePlaneX[0] * diff[0] * 0.005;
+    this->offset[1] += imagePlaneX[1] * diff[1] * 0.005;
+
     Log::debug("SetPan called: (", diff[0], ", ", diff[1], ")");
 }
 
