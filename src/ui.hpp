@@ -26,7 +26,7 @@ class Camera
 
 public:
     Camera() : 
-        up{     0.0, 1.0, 0.0 },
+        up{     0.0, 0.0, 0.0 },
         pos{    0.0, 0.0, 0.0 },
         lookAt{ 0.0, 0.0, 0.0 },
         aspect{ 0 }
@@ -43,6 +43,8 @@ public:
     void TranslateRotateScene();
 
     double aspect;
+    utils::CSVec<CS::CARTESIAN, double, 3> lookAt;
+    utils::CSVec<CS::CARTESIAN, double, 3> up;
     utils::CSVec<CS::SPHERICAL, double, 3> pos; // TODO move to private
 
 private:
@@ -57,8 +59,6 @@ private:
         return lol;
     }
 
-    utils::CSVec<CS::CARTESIAN, double, 3> lookAt;
-    utils::CSVec<CS::CARTESIAN, double, 3> up;
 };
 
 class Window

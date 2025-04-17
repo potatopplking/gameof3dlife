@@ -100,10 +100,19 @@ Window::Window(int width, int height) :
     window{ nullptr },
     context{ nullptr }
 {
+    using namespace utils;
     Log::debug("Window constructor called");
-    camera.pos[0] = -45.0;
-    camera.pos[1] = 63.0;
-    camera.pos[2] = 30.0;
+    camera.pos[SphericalIndex::PHI] = -2.0;
+    camera.pos[SphericalIndex::THETA] = 1.0;
+    camera.pos[SphericalIndex::R] = 30.0;
+
+    camera.up[CartesianIndex::X] = 0.0;
+    camera.up[CartesianIndex::Y] = 0.0;
+    camera.up[CartesianIndex::Z] = 1.0;
+
+    camera.lookAt[CartesianIndex::X] = 0.0;
+    camera.lookAt[CartesianIndex::Y] = 0.0;
+    camera.lookAt[CartesianIndex::Z] = 0.0;
 }
 
 Window::~Window()
@@ -194,6 +203,10 @@ void Window::ProcessEvents()
                 } else if (kbd_event.key == 'r') {
                     Log::info("Reinitializing simulation...");
                     this->sim->InitRandomState();
+                } else if (kbd_event.key == 'w') {
+                    this->camera.SetZoom(1);
+                } else if (kbd_event.key == 's') {
+                    this->camera.SetZoom(-1);
                 }
                 break;
             }
@@ -222,7 +235,7 @@ void Window::ProcessEvents()
                 } else if (mouse_event.state == SDL_BUTTON_MMASK) {
                     camera.SetPan(diff);   
                 }
-                Log::debug("Mouse motion event: ", diff[0], ", ", diff[1]);
+                //Log::debug("Mouse motion event: ", diff[0], ", ", diff[1]);
                 mouse_prev_pos = mouse_current_pos;
                 break;
             }
@@ -312,7 +325,7 @@ void Camera::TranslateRotateScene()
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     auto eye_pos_cartesian = CSVec<CoordinateSystem::CARTESIAN, double, 3>(pos);
-    auto up = CSVec<CoordinateSystem::CARTESIAN, double, 3>{ 0.0, 1.0, 0.0 };
+    //auto up = CSVec<CoordinateSystem::CARTESIAN, double, 3>{ 0.0, 1.0, 0.0 };
     gluLookAt(eye_pos_cartesian[0],
               eye_pos_cartesian[1],
               eye_pos_cartesian[2],
@@ -325,7 +338,7 @@ void Camera::TranslateRotateScene()
 
 void Camera::SetZoom(float scroll_diff)
 {
-    this->pos[2] += this->CAMERA_ZOOM_FACTOR * scroll_diff;
+    this->pos[utils::SphericalIndex::R] += this->CAMERA_ZOOM_FACTOR * scroll_diff;
 }
 
 void Camera::SetPan(MousePos diff)
@@ -340,20 +353,22 @@ void Camera::SetPan(MousePos diff)
 
 void Camera::SetRotation(MousePos diff)
 {
-    // x movement [0] translates to pitch
-    // y movement [1] translates to yaw
-    //auto view_vector = this->lookAt - this->pos;
-    //auto imagePlaneX = utils::CrossProduct(view_vector, this->up);
-    //auto imagePlaneY = utils::CrossProduct(imagePlaneX, this->up);
-
-//    auto [imagePlaneX, imagePlaneY] = this->GetProjectionPlaneBasis<utils::CoordinateSystem::SPHERICAL>();
-    this->pos[0] += diff[0] * -0.1;
-    this->pos[1] += diff[1] * -0.1;
-    Log::debug("SetRotation called: (", diff[0], ", ", diff[1], ")");
     using namespace utils;
+
+    auto& theta = this->pos[SphericalIndex::THETA];
+    theta += diff[1] * -0.005; 
+    theta = theta > M_PI ? M_PI : theta;
+    theta = theta <= 0.1 ? 0.1 : theta;
+
+    auto &phi = this->pos[SphericalIndex::PHI];
+    phi += diff[0] * -0.005;
+
+    Log::debug("SetRotation called: (", diff[0], ", ", diff[1], ")");
     auto eye_pos_cartesian = CSVec<CoordinateSystem::CARTESIAN, double, 3>(pos);
-    Log::debug("pos spherical:", pos);
-    Log::debug("pos cartesian:", eye_pos_cartesian);
+    Log::debug("	Camera up: ", up);
+    Log::debug("	Camera lookAt: ", lookAt);
+    Log::debug("	Camera pos: ", pos);
+    Log::debug("	Camera pos cartesian: ", eye_pos_cartesian);
 }
 
 
