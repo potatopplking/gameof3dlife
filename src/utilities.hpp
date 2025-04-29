@@ -86,6 +86,13 @@ class Vec
             return result;
         }
 
+        Vec& operator+=(const Vec& other) {
+            for (int i = 0; i < size; i++) {
+                this->elements[i] += other.elements[i];
+            }
+            return *this;
+        }
+
         Vec operator-(const Vec& other) {
 //            Log::profiling_debug("Vec::operator+" );
             auto result = *this;
@@ -93,6 +100,11 @@ class Vec
                 result.elements[i] -= other.elements[i];
             }
             return result;
+        }
+
+        Vec operator-() {
+          Vec<T,size> result;
+          return result - *this;
         }
 
         /*template <class U>
@@ -312,11 +324,8 @@ class CSVec : public Vec<ElementT,dimension> {
 
 };
 
-
-
-
 template<class T, int dim>
-Vec<T,dim> CrossProduct(Vec<T,dim>& a, Vec<T,dim>& b) {
+Vec<T,dim> CrossProduct(const Vec<T,dim>& a, const Vec<T,dim>& b) {
     
     Vec<T,dim> result;
     

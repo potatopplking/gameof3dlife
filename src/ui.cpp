@@ -364,11 +364,18 @@ void Camera::SetPan(MousePos diff)
     auto pos_cartesian = CSVec<CoordinateSystem::CARTESIAN, double, 3>(this->pos);
     auto view_vector = this->lookAt - pos_cartesian;
     auto imagePlaneX = CrossProduct(view_vector, this->up);
-    auto imagePlaneY = CrossProduct(imagePlaneX, this->up);
+    auto imagePlaneY = CrossProduct(-imagePlaneX, view_vector);
     imagePlaneX.Normalize();
     imagePlaneY.Normalize();
-    this->offset[0] += imagePlaneX[0] * diff[0] * 0.005;
-    this->offset[1] += imagePlaneX[1] * diff[1] * 0.005;
+    Log::debug("----------------------------");
+    Log::debug("pos_cartesian: ", pos_cartesian);
+    Log::debug("this->up: ", this->up);
+    Log::debug("view_vector: ", view_vector);
+    Log::debug("imagePlaneX: ", imagePlaneX);
+    Log::debug("imagePlaneY: ", imagePlaneY);
+    Log::debug("this->offset: ", this->offset);
+    this->offset += imagePlaneX * diff[0] * 0.05;
+    this->offset += imagePlaneY * diff[1] * 0.05;
 
     Log::debug("SetPan called: (", diff[0], ", ", diff[1], ")");
 }
