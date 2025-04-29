@@ -378,12 +378,12 @@ void Camera::SetRotation(MousePos diff)
     using namespace utils;
 
     auto& theta = this->pos[SphericalIndex::THETA];
-    theta += diff[1] * -0.005; 
+    theta += diff[1] * 0.005; 
     theta = theta > M_PI ? M_PI : theta;
     theta = theta <= 0.1 ? 0.1 : theta;
 
     auto &phi = this->pos[SphericalIndex::PHI];
-    phi += diff[0] * -0.005;
+    phi += diff[0] * 0.005;
 
     Log::debug("SetRotation called: (", diff[0], ", ", diff[1], ")");
     auto eye_pos_cartesian = CSVec<CoordinateSystem::CARTESIAN, double, 3>(pos);

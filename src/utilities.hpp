@@ -88,9 +88,9 @@ class Vec
 
         Vec operator-(const Vec& other) {
 //            Log::profiling_debug("Vec::operator+" );
-            auto result = other;
+            auto result = *this;
             for (int i = 0; i < size; i++) {
-                result.elements[i] -= this->elements[i];
+                result.elements[i] -= other.elements[i];
             }
             return result;
         }
