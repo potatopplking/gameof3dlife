@@ -23,35 +23,41 @@ GameOfLife2D::GameOfLife2D(int32_t rows, int32_t cols) :
 }
 
 // (Re)initialize to random state
-void GameOfLife2D::InitRandomState()  {
+void GameOfLife2D::InitRandomState() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::bernoulli_distribution dis(0.5);
 
     auto [rows, cols, _] = this->GetGridSize().elements;
-    this->cells.resize(rows*cols);
-    for (int index = 0; index < rows*cols; index++) {
-        this->cells[index] = dis(gen);
+    this->cells.resize(rows * cols);
+    for (auto &cell : this->cells) {
+        cell = dis(gen);
     }
 }
 
-double GameOfLife2D::Step(double dt)  {
-    auto [rows, cols, _] = this->gridSize.elements; 
+double GameOfLife2D::Step(double dt) {
+    auto [rows, cols, _] = this->gridSize.elements;
+    std::vector<uint8_t> next_cells = this->cells; // Ensure consistent type
 
-    for (int i = 0; i < rows*cols; i++) {
-        auto neighbours_alive = this->SumNeighbouringCells(i);
-        if (neighbours_alive < 2) {
-            this->cells[i] = 0; // dies from underpopulation
-        } else if (neighbours_alive == 3) {
-            this->cells[i] = 1; // either stays alive or gets created
-        } else if (neighbours_alive > 3) {
-            this->cells[i] = 0; // dies from overpopulation
+    for (int row = 0; row < rows; ++row) {
+        for (int col = 0; col < cols; ++col) {
+            uint32_t index = row * cols + col;
+            auto neighbours_alive = this->SumNeighbouringCells(row, col); // Pass row and col as arguments
+
+            if (this->cells[index] == 1) {
+                next_cells[index] = (neighbours_alive == 2 || neighbours_alive == 3) ? 1 : 0;
+            } else {
+                next_cells[index] = (neighbours_alive == 3) ? 1 : 0;
+            }
         }
     }
 
-    for (int index = 0; index < rows*cols; index++) {
+    this->cells = std::move(next_cells); // Ensure consistent type
+
+    for (int index = 0; index < rows * cols; ++index) {
         this->voxels[index].color = this->cells[index] ? utils::white : utils::black;
     }
+
     return dt;
 }
 
@@ -63,45 +69,23 @@ const std::vector<Voxel>& GameOfLife2D::GetVoxels()  {
     return this->voxels;
 }
 
-uint32_t GameOfLife2D::SumNeighbouringCells(uint32_t index) {
+uint32_t GameOfLife2D::SumNeighbouringCells(int32_t row, int32_t col) {
     auto [rows, cols, _] = this->GetGridSize().elements;
-    int32_t row = index / cols;
-    int32_t col = index % cols;
     uint32_t sum_alive = 0;
-    int32_t up_row = row-1;
-    bool up_exists = up_row >= 0;
-    int32_t down_row = row+1;
-    bool down_exist = down_row < rows;
-    int32_t left_col = col-1;
-    bool left_exists = left_col >= 0;
-    int32_t right_col = col+1;
-    bool right_exists = right_col < cols;
 
-    if (up_exists) {
-        if (left_exists) {
-            sum_alive += cells[up_row*cols + left_col];
-        }
-        sum_alive += cells[up_row*cols + col];
-        if (right_exists) {
-            sum_alive += cells[up_row*cols + right_col];
-        }
-    }
-    if (left_exists) {
-        sum_alive += cells[row*cols + left_col];
-    }
-    if (right_exists) {
-        sum_alive += cells[row*cols + right_col];
-    }
-    if (down_exist) {
-        if (left_exists) {
-            sum_alive += cells[down_row*cols + left_col];
-        }
-        sum_alive += cells[down_row*cols];
-        if (right_exists) {
-            sum_alive += cells[down_row*cols + right_col];
+    // done by our AI overlords
+    for (int dr = -1; dr <= 1; ++dr) {
+        for (int dc = -1; dc <= 1; ++dc) {
+            if (dr == 0 && dc == 0) continue; // Skip the current cell
+
+            int32_t neighbor_row = row + dr;
+            int32_t neighbor_col = col + dc;
+
+            if (neighbor_row >= 0 && neighbor_row < rows && neighbor_col >= 0 && neighbor_col < cols) {
+                sum_alive += this->cells[neighbor_row * cols + neighbor_col];
+            }
         }
     }
-    // TODO tohle je fakt bida, urcite to jde lip
 
     return sum_alive;
 }
