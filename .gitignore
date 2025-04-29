@@ -2,5 +2,7 @@ tags
 a.out
 gameof3dlife
 utilities_test
+.vs
+.vscode
 vs/gameof3dlife/.vs/
 vs/gameof3dlife/gameof3dlife/gameof3dlife.vcxproj.user
