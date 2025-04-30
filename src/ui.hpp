@@ -71,6 +71,7 @@ class Window {
         utils::Vec<int, 2> mouse_prev_pos;
         Camera camera;
         bool simulation_paused = false;
+        double real_time_elapsed = 0.0; // Tracks time passed in the real world
 
         Window();
         Window(int width, int height);
@@ -81,6 +82,7 @@ class Window {
         void SetSimulation(std::unique_ptr<Simulation::BaseSimulation> new_sim);
         void Resize(int width, int height);
         void Resize(utils::Vec<int, 2> new_size);
+        void ResetSimulation(); // Added declaration for SimulationReset
 
     private:
         bool exit_requested = false;

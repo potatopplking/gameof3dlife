@@ -6,8 +6,8 @@
 - [x] Fix camera rotate
 - [x] Fix camera pan
 - [x] Fix 2D GoL rules
-- [ ] Fix timing
-- [ ] Add pause
+- [x] Fix timing
+- [x] Add pause
 - [ ] Better (and more efficient) voxel drawing
     - [ ] Wireframe mode
     - [ ] Alpha - change visibility?

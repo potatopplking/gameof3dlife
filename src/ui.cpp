@@ -201,8 +201,7 @@ void Window::ProcessEvents()
                 if (kbd_event.key == 'q') {
                     this->exit_requested = true;
                 } else if (kbd_event.key == 'r') {
-                    Log::info("Reinitializing simulation...");
-                    this->sim->InitRandomState();
+                    ResetSimulation();
                 } else if (kbd_event.key == 's') {
                     this->camera.SetZoom(1);
                 } else if (kbd_event.key == 'w') {
@@ -268,12 +267,22 @@ auto [R,G,B,A] = c.elements;
 }
 
 void Window::UpdateSimulation() {
-    const double dt = 0.1;
-    // TODO timing
-    static uint32_t timer = 0;
-    if (++timer % 50 == 0) {
-        double time_passed = this->sim->Step(dt);
+    static uint32_t last_time = SDL_GetTicks();
+    uint32_t current_time = SDL_GetTicks();
+    double delta_time = (current_time - last_time) / 1000.0; // Convert to seconds
+    last_time = current_time;
+
+    this->real_time_elapsed += delta_time;
+
+    const double target_fps = 60.0;
+    const double target_frame_time = 1.0 / target_fps;
+
+    if (this->real_time_elapsed >= target_frame_time) {
+        double simulation_step = target_frame_time;
+        this->sim->Step(simulation_step);
     }
+    Log::debug("Real time elapsed: ", this->real_time_elapsed);
+    Log::debug("Simulation time: ", this->sim->GetSimulationTime());
 }
 
 void Window::Render(const std::vector<Voxel>& voxels) {
@@ -333,6 +342,12 @@ void Window::Run()
 void Window::SetSimulation(std::unique_ptr<Simulation::BaseSimulation> new_sim)
 {
   this->sim = std::move(new_sim);
+}
+
+void Window::ResetSimulation() {
+    Log::info("Resetting simulation and real time...");
+    this->sim->InitRandomState();
+    this->real_time_elapsed = 0.0; // Reset real time
 }
 
 void Camera::SetPerspectiveProjection()
