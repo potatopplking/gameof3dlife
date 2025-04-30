@@ -83,6 +83,7 @@ class Window {
         void Resize(int width, int height);
         void Resize(utils::Vec<int, 2> new_size);
         void ResetSimulation(); // Added declaration for SimulationReset
+        double GetUptime();
 
     private:
         bool exit_requested = false;
@@ -95,6 +96,7 @@ class Window {
         void DrawAxis();
         void Flush();
         void Resize();
+        void UpdateTime();
 };
 
 }

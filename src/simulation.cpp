@@ -33,6 +33,8 @@ void GameOfLife2D::InitRandomState() {
     for (auto &cell : this->cells) {
         cell = dis(gen);
     }
+    
+    this->simulation_time = 0.0;
 }
 
 double GameOfLife2D::Step(double dt) {
@@ -58,6 +60,7 @@ double GameOfLife2D::Step(double dt) {
         this->voxels[index].color = this->cells[index] ? utils::white : utils::black;
     }
 
+    this->simulation_time += dt;
     return dt;
 }
 

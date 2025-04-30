@@ -267,22 +267,21 @@ auto [R,G,B,A] = c.elements;
 }
 
 void Window::UpdateSimulation() {
-    static uint32_t last_time = SDL_GetTicks();
-    uint32_t current_time = SDL_GetTicks();
-    double delta_time = (current_time - last_time) / 1000.0; // Convert to seconds
+    // conversion factor between real and simulation time:
+    // t_conversion_factor = real_time / simulation_time;
+    constexpr double t_conversion_factor = 0.5;
+
+    double current_time = GetUptime();
+    static double last_time = current_time;
+    static double next_update_time = current_time;
+    
+    double delta_time = current_time - last_time;
     last_time = current_time;
 
-    this->real_time_elapsed += delta_time;
-
-    const double target_fps = 60.0;
-    const double target_frame_time = 1.0 / target_fps;
-
-    if (this->real_time_elapsed >= target_frame_time) {
-        double simulation_step = target_frame_time;
-        this->sim->Step(simulation_step);
+    if (current_time >= next_update_time) {
+        this->sim->Step(0.1);
+        next_update_time = current_time + this->sim->GetStepSize()*t_conversion_factor;
     }
-    Log::debug("Real time elapsed: ", this->real_time_elapsed);
-    Log::debug("Simulation time: ", this->sim->GetSimulationTime());
 }
 
 void Window::Render(const std::vector<Voxel>& voxels) {
@@ -324,11 +323,21 @@ void Window::Flush()
     //SDL_RenderPresent(this->renderer);
 }
 
+void Window::UpdateTime()
+{
+    this->real_time_elapsed = SDL_GetTicks() / 1000.0;
+}
+
+double Window::GetUptime()
+{
+    return this->real_time_elapsed;
+}
+
 void Window::Run()
 {
     while (!ExitRequested()) {
         ProcessEvents();
-
+        UpdateTime();
         if (!this->simulation_paused) {
             UpdateSimulation();
         }

@@ -17,9 +17,11 @@ public:
     virtual const std::vector<Voxel>& GetVoxels() = 0;
 
     double GetSimulationTime() const { return simulation_time; }
+    double GetStepSize() const { return step; }
 
 protected:
     double simulation_time = 0.0; // Tracks time passed in the simulation
+    double step = 1.0;
 };
 
 class GameOfLife2D : public BaseSimulation {
