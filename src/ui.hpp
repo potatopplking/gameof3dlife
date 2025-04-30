@@ -59,8 +59,7 @@ private:
 
 };
 
-class Window
-{
+class Window {
     public:
         // SDL and OpenGL attributes
         SDL_Renderer* renderer;
@@ -71,6 +70,7 @@ class Window
         utils::Vec<int, 2> size;
         utils::Vec<int, 2> mouse_prev_pos;
         Camera camera;
+        bool simulation_paused = false;
 
         Window();
         Window(int width, int height);

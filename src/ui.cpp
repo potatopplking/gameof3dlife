@@ -207,6 +207,9 @@ void Window::ProcessEvents()
                     this->camera.SetZoom(1);
                 } else if (kbd_event.key == 'w') {
                     this->camera.SetZoom(-1);
+                } else if (kbd_event.key == ' ') { // Spacebar to toggle pause
+                    this->simulation_paused = !this->simulation_paused;
+                    Log::info(this->simulation_paused ? "Simulation paused" : "Simulation resumed");
                 }
                 break;
             }
@@ -268,7 +271,7 @@ void Window::UpdateSimulation() {
     const double dt = 0.1;
     // TODO timing
     static uint32_t timer = 0;
-    if (++timer%50 == 0) {
+    if (++timer % 50 == 0) {
         double time_passed = this->sim->Step(dt);
     }
 }
@@ -316,7 +319,11 @@ void Window::Run()
 {
     while (!ExitRequested()) {
         ProcessEvents();
-        UpdateSimulation();
+
+        if (!this->simulation_paused) {
+            UpdateSimulation();
+        }
+
         ClearWindow(utils::Color{100,0,0,255});
         auto voxels = this->sim->GetVoxels();
         Render(voxels);
