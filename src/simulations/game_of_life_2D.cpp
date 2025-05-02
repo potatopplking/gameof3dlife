@@ -1,7 +1,8 @@
 #include <random>
 
 #include "utilities.hpp"
-#include "simulation.hpp"
+#include "simulations/base.hpp"
+#include "simulations/game_of_life_2D.hpp"
 
 namespace Simulation {
 

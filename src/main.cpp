@@ -2,7 +2,7 @@
 
 #include "utilities.hpp"
 #include "voxel.hpp"
-#include "simulation.hpp"
+#include "simulations/game_of_life_2D.hpp"
 #include "ui.hpp"
 
 // Voxel and GridSize are used both in Simulation and Window

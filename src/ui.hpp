@@ -4,7 +4,7 @@
 
 #include <SDL3/SDL.h>
 
-#include "simulation.hpp"
+#include "simulations/base.hpp"
 #include "utilities.hpp"
 #include "voxel.hpp"
 

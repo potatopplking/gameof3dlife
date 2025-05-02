@@ -372,7 +372,7 @@ void Camera::SetPerspectiveProjection()
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45.0f, this->aspect, 0.1f, 1000.0f); // Increased far clipping plane from 100.0f to 1000.0f
-}
+}   
 
 void Camera::TranslateRotateScene()
 {
