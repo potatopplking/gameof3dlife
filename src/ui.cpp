@@ -285,16 +285,25 @@ void Window::UpdateSimulation() {
 }
 
 void Window::Render(const std::vector<Voxel>& voxels) {
+    ClearWindow(utils::Color{100,0,0,255});
     glViewport(0, 0, this->size[0], this->size[1]);
 
     camera.SetPerspectiveProjection();
     camera.TranslateRotateScene();
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthMask(GL_FALSE);
+
     for (auto& voxel : voxels) {
         auto [R,G,B,A] = voxel.color.elements;
-        glColor3ub(R,G,B);
+        glColor4ub(R,G,B,A);
         draw_cube(voxel.position);
     }
+
+    glDisable(GL_BLEND);
+    glDepthMask(GL_TRUE);
+
     DrawAxis();
     enable_light();
     this->Flush();
@@ -342,7 +351,6 @@ void Window::Run()
             UpdateSimulation();
         }
 
-        ClearWindow(utils::Color{100,0,0,255});
         auto voxels = this->sim->GetVoxels();
         Render(voxels);
     }
