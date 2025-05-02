@@ -63,7 +63,6 @@ class Vec
         Vec(std::initializer_list<U> list) {
             Log::profiling_debug("Vec{initializer_list} constructor called" );
             assert(size == list.size());
-            //std:: cout );
             size_t i = 0;
             for (auto& l : list) {
                 this->elements[i++] = static_cast<T>(l);

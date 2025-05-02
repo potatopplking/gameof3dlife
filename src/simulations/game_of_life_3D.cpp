@@ -9,18 +9,24 @@ namespace Simulation {
 const auto black = utils::Color{0,0,0,100};
 const auto white = utils::Color{255,255,255,100};
 
-GameOfLife3D::GameOfLife3D(int32_t rows, int32_t cols) :
-    gridSize{rows,cols,1}
+// TODO indexing!!!
+// TODO move index from sim coords to base
+
+GameOfLife3D::GameOfLife3D(uint32_t rows, uint32_t cols, uint32_t stacks) :
+    BaseSimulation(rows,cols,stacks)
 {
-    this->voxels.resize(rows * cols);
+    this->voxels.resize(rows * cols * stacks); // TODO move to base
     size_t i = 0;
     const float voxel_size = 1.0f;
 
-    for (int row = 0; row < rows; row++) {
-        for (int col = 0; col < cols; col++) {
-            uint32_t index = row*cols + col; 
-            this->voxels[index].color = black;
-            this->voxels[index].position = {row,col,0};
+    // TODO order
+    for (int32_t stack = 0; stack < static_cast<int32_t>(stacks); stack++) {
+        for (int32_t row = 0; row < static_cast<int32_t>(rows); row++) {
+            for (int32_t col = 0; col < static_cast<int32_t>(cols); col++) {
+                uint32_t index = IndexFromSimCoords(row, col, stack);
+                this->voxels[index].color = black;
+                this->voxels[index].position = { row, col, stack };
+            }
         }
     }
     this->InitRandomState();
@@ -42,18 +48,21 @@ void GameOfLife3D::InitRandomState() {
 }
 
 double GameOfLife3D::Step(double dt) {
-    auto [rows, cols, _] = this->gridSize.elements;
+    auto [rows, cols, stacks] = this->gridSize.elements;
     std::vector<uint8_t> next_cells = this->cells; // Ensure consistent type
 
-    for (int row = 0; row < rows; ++row) {
-        for (int col = 0; col < cols; ++col) {
-            uint32_t index = row * cols + col;
-            auto neighbours_alive = this->SumNeighbouringCells(row, col); // Pass row and col as arguments
+    // TODO order
+    for (int32_t stack = 0; stack < static_cast<int32_t>(stacks); stack++) {
+        for (int32_t row = 0; row < rows; ++row) {
+            for (int32_t col = 0; col < cols; ++col) {
+                uint32_t index = IndexFromSimCoords(row, col, stack);
+                auto neighbours_alive = this->SumNeighbouringCells(row, col); // Pass row and col as arguments
 
-            if (this->cells[index] == 1) {
-                next_cells[index] = (neighbours_alive == 2 || neighbours_alive == 3) ? 1 : 0;
-            } else {
-                next_cells[index] = (neighbours_alive == 3) ? 1 : 0;
+                if (this->cells[index] == 1) {
+                    next_cells[index] = (neighbours_alive == 2 || neighbours_alive == 3) ? 1 : 0;
+                } else {
+                    next_cells[index] = (neighbours_alive == 3) ? 1 : 0;
+                }
             }
         }
     }
@@ -66,14 +75,6 @@ double GameOfLife3D::Step(double dt) {
 
     this->simulation_time += dt;
     return dt;
-}
-
-const utils::Vec<int32_t, 3>& GameOfLife3D::GetGridSize()  {
-    return this->gridSize;
-}
-
-const std::vector<Voxel>& GameOfLife3D::GetVoxels()  {
-    return this->voxels;
 }
 
 uint32_t GameOfLife3D::SumNeighbouringCells(int32_t row, int32_t col) {

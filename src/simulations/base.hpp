@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <cstdint>
 
 #include "voxel.hpp"
 
@@ -10,17 +11,27 @@ class BaseSimulation {
 public:
     virtual ~BaseSimulation() = default;
 
-    // Pure virtual methods to be implemented by derived classes
+    BaseSimulation(uint32_t rows, uint32_t cols, uint32_t stacks) :
+      gridSize{rows, cols, stacks}
+    {}
+
     virtual void InitRandomState() = 0;
     virtual double Step(double dt) = 0;
-    virtual const utils::Vec<int32_t, 3>& GetGridSize() = 0;
-    virtual const std::vector<Voxel>& GetVoxels() = 0;
 
+    const utils::Vec<int32_t, 3>& GetGridSize() const { return gridSize; }
+    const std::vector<Voxel>& GetVoxels() const { return voxels; }
     double GetSimulationTime() const { return simulation_time; }
     double GetStepSize() const { return step; }
+    uint32_t IndexFromSimCoords(int32_t row, int32_t col, int32_t stack) const // TODO order
+    {
+        auto [ rows, cols, stacks ] = GetGridSize().elements; 
+        return (stack * (rows+cols)) + (row * cols) + col;
+    }
 
 protected:
-    double simulation_time = 0.0; // Tracks time passed in the simulation
+    utils::Vec<int32_t, 3> gridSize;
+    std::vector<Voxel> voxels;
+    double simulation_time = 0.0;
     double step = 1.0;
 };
 
