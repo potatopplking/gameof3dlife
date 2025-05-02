@@ -1,11 +1,15 @@
 #include <random>
 
 #include "utilities.hpp"
-#include "simulations/game_of_life_2D.hpp"
+#include "simulations/game_of_life_3D.hpp"
 
 namespace Simulation {
 
-GameOfLife2D::GameOfLife2D(int32_t rows, int32_t cols) :
+// locally redefining color to be more transparent
+const auto black = utils::Color{0,0,0,100};
+const auto white = utils::Color{255,255,255,100};
+
+GameOfLife3D::GameOfLife3D(int32_t rows, int32_t cols) :
     gridSize{rows,cols,1}
 {
     this->voxels.resize(rows * cols);
@@ -15,7 +19,7 @@ GameOfLife2D::GameOfLife2D(int32_t rows, int32_t cols) :
     for (int row = 0; row < rows; row++) {
         for (int col = 0; col < cols; col++) {
             uint32_t index = row*cols + col; 
-            this->voxels[index].color = utils::black;
+            this->voxels[index].color = black;
             this->voxels[index].position = {row,col,0};
         }
     }
@@ -23,7 +27,7 @@ GameOfLife2D::GameOfLife2D(int32_t rows, int32_t cols) :
 }
 
 // (Re)initialize to random state
-void GameOfLife2D::InitRandomState() {
+void GameOfLife3D::InitRandomState() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::bernoulli_distribution dis(0.5);
@@ -37,7 +41,7 @@ void GameOfLife2D::InitRandomState() {
     this->simulation_time = 0.0;
 }
 
-double GameOfLife2D::Step(double dt) {
+double GameOfLife3D::Step(double dt) {
     auto [rows, cols, _] = this->gridSize.elements;
     std::vector<uint8_t> next_cells = this->cells; // Ensure consistent type
 
@@ -57,22 +61,22 @@ double GameOfLife2D::Step(double dt) {
     this->cells = std::move(next_cells); // Ensure consistent type
 
     for (int index = 0; index < rows * cols; ++index) {
-        this->voxels[index].color = this->cells[index] ? utils::white : utils::black;
+        this->voxels[index].color = this->cells[index] ? white : black;
     }
 
     this->simulation_time += dt;
     return dt;
 }
 
-const utils::Vec<int32_t, 3>& GameOfLife2D::GetGridSize()  {
+const utils::Vec<int32_t, 3>& GameOfLife3D::GetGridSize()  {
     return this->gridSize;
 }
 
-const std::vector<Voxel>& GameOfLife2D::GetVoxels()  {
+const std::vector<Voxel>& GameOfLife3D::GetVoxels()  {
     return this->voxels;
 }
 
-uint32_t GameOfLife2D::SumNeighbouringCells(int32_t row, int32_t col) {
+uint32_t GameOfLife3D::SumNeighbouringCells(int32_t row, int32_t col) {
     auto [rows, cols, _] = this->GetGridSize().elements;
     uint32_t sum_alive = 0;
 

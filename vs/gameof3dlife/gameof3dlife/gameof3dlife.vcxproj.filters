@@ -27,6 +27,9 @@
     <ClCompile Include="..\..\..\src\simulations\game_of_life_2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\simulations\game_of_life_3D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\log.hpp">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\simulations\game_of_life_2D.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\simulations\game_of_life_3D.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

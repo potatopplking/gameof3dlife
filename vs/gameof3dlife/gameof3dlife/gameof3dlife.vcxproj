@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\src\main.cpp" />
     <ClCompile Include="..\..\..\src\simulations\game_of_life_2D.cpp" />
+    <ClCompile Include="..\..\..\src\simulations\game_of_life_3D.cpp" />
     <ClCompile Include="..\..\..\src\ui.cpp" />
     <ClCompile Include="..\..\..\src\utilities.cpp" />
   </ItemGroup>
@@ -160,6 +161,7 @@
     <ClInclude Include="..\..\..\src\log.hpp" />
     <ClInclude Include="..\..\..\src\simulations\base.hpp" />
     <ClInclude Include="..\..\..\src\simulations\game_of_life_2D.hpp" />
+    <ClInclude Include="..\..\..\src\simulations\game_of_life_3D.hpp" />
     <ClInclude Include="..\..\..\src\ui.hpp" />
     <ClInclude Include="..\..\..\src\utilities.hpp" />
     <ClInclude Include="..\..\..\src\voxel.hpp" />

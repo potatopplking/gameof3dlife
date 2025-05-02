@@ -3,6 +3,7 @@
 #include "utilities.hpp"
 #include "voxel.hpp"
 #include "simulations/game_of_life_2D.hpp"
+#include "simulations/game_of_life_3D.hpp"
 #include "ui.hpp"
 
 // Voxel and GridSize are used both in Simulation and Window
@@ -16,7 +17,7 @@ int main(void)
     UI::Window window{ 800, 600 };
     window.Init();
 
-    window.SetSimulation(std::make_unique<Simulation::GameOfLife2D>(50,50));
+    window.SetSimulation(std::make_unique<Simulation::GameOfLife3D>(10,10));
 
     window.Run();
 
