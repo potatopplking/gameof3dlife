@@ -25,7 +25,7 @@ public:
     uint32_t IndexFromSimCoords(int32_t row, int32_t col, int32_t stack) const // TODO order
     {
         auto [ rows, cols, stacks ] = GetGridSize().elements; 
-        return (stack * (rows+cols)) + (row * cols) + col;
+        return (stack * (rows*cols)) + (row * cols) + col;
     }
 
 protected:

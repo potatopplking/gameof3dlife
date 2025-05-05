@@ -19,6 +19,7 @@ GLenum GLEWAPIENTRY glewInit(void);
 namespace UI {
 
 void draw_cube(utils::SimCoords pos) {
+    // TODO asi jsou spatne normaly - pruhledne to vykresluje spatne
 //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //    glLoadIdentity();
 //
