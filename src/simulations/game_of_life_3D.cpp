@@ -6,8 +6,8 @@
 namespace Simulation {
 
 // locally redefining color to more transparent version
-const auto black = utils::Color{0,0,0,200};
-const auto white = utils::Color{255,255,255,200};
+const auto black = utils::Color{  0,   0,   0, 200};
+const auto white = utils::Color{255, 255, 255, 200};
 
 // TODO indexing!!!
 // TODO move index from sim coords to base

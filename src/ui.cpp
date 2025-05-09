@@ -33,12 +33,10 @@ void draw_cube(utils::SimCoords pos) {
         float(pos[0]), float(pos[1]), float(pos[2])
     );
     GLfloat vertices[] = {
-        // Front face
         -0.5f, -0.5f,  0.5f,
          0.5f, -0.5f,  0.5f,
          0.5f,  0.5f,  0.5f,
         -0.5f,  0.5f,  0.5f,
-        // Back face
         -0.5f, -0.5f, -0.5f,
          0.5f, -0.5f, -0.5f,
          0.5f,  0.5f, -0.5f,
@@ -46,32 +44,34 @@ void draw_cube(utils::SimCoords pos) {
     };
 
     GLuint indices[] = {
-        2, 1, 0,    0, 3, 2,    // Front
-        1, 5, 6,    6, 2, 1,    // Right
-        7, 6, 5,    5, 4, 7,    // Back
-        4, 0, 3,    3, 7, 4,    // Left
-        4, 5, 1,    1, 0, 4,    // Bottom
-        3, 2, 6,    6, 7, 3     // Top
+        0, 1, 2,    2, 3, 0,    // (0,0,-1)
+        1, 5, 6,    6, 2, 1,    // (1,0,0)
+        7, 6, 5,    5, 4, 7,    // (0,0,1)
+        4, 0, 3,    3, 7, 4,    // (-1,0,0)
+        4, 5, 1,    1, 0, 4,    // (0,-1,0)
+        3, 2, 6,    6, 7, 3     // (0,1,0)
     };
 
     GLfloat normals[] = {
-        // Front
-        0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f,
-        // Back
-        0.0f, 0.0f, -1.0f,
-        0.0f, 0.0f, -1.0f,
-        0.0f, 0.0f, -1.0f,
-        0.0f, 0.0f, -1.0f
+         0.0f,  0.0f, -1.0f,
+         0.0f,  0.0f, -1.0f,
+         1.0f,  0.0f,  0.0f,
+         1.0f,  0.0f,  0.0f,
+         0.0f,  0.0f,  1.0f,
+         0.0f,  0.0f,  1.0f,
+        -1.0f,  0.0f,  0.0f,
+        -1.0f,  0.0f,  0.0f,
+         0.0f, -1.0f,  0.0f,
+         0.0f, -1.0f,  0.0f,
+         0.0f,  1.0f,  0.0f,
+         0.0f,  1.0f,  0.0f,
     };
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
     glVertexPointer(3, GL_FLOAT, 0, vertices);
     glNormalPointer(GL_FLOAT, 0, normals);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, indices);
+    glDrawElements(GL_TRIANGLES, utils::len(indices), GL_UNSIGNED_INT, indices);
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
     glPopMatrix();

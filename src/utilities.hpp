@@ -42,6 +42,17 @@ enum class CartesianIndex {
   Z
 };
 
+
+/*
+ * Functions
+ */
+
+template<typename T, int N>
+constexpr int len(T (&array)[N])
+{
+    return N;
+}
+
 /*
  * Classes
  */
