@@ -15,12 +15,13 @@ const auto white = utils::Color{255, 255, 255, 200};
 GameOfLife3D::GameOfLife3D(uint32_t rows, uint32_t cols, uint32_t stacks) :
     BaseSimulation(rows,cols,stacks)
 {
-    this->voxels.resize(rows * cols * stacks); // TODO move to base
+    auto size = rows * cols * stacks;
+    this->voxels.resize(size); // TODO move to base
+    this->cells.resize(size);
 
-    // TODO order
-    for (int32_t stack = 0; stack < static_cast<int32_t>(stacks); stack++) {
-        for (int32_t row = 0; row < static_cast<int32_t>(rows); row++) {
-            for (int32_t col = 0; col < static_cast<int32_t>(cols); col++) {
+    for (int32_t row = 0; row < static_cast<int32_t>(rows); row++) {
+        for (int32_t col = 0; col < static_cast<int32_t>(cols); col++) {
+            for (int32_t stack = 0; stack < static_cast<int32_t>(stacks); stack++) {
                 uint32_t index = IndexFromSimCoords(row, col, stack);
                 this->voxels[index].color = black;
                 this->voxels[index].position = { row, col, stack };
@@ -37,13 +38,20 @@ void GameOfLife3D::InitRandomState() {
     std::mt19937 gen(rd());
     std::bernoulli_distribution dis(0.5);
 
-    auto [rows, cols, stacks] = this->GetGridSize().elements;
-    this->cells.resize(rows * cols * stacks);
     for (auto &cell : this->cells) {
         cell = dis(gen);
     }
     
     this->simulation_time = 0.0;
+
+    VoxelToColor();
+}
+
+void GameOfLife3D::VoxelToColor() {
+    auto [rows, cols, stacks] = this->gridSize.elements;
+    for (int index = 0; index < rows * cols * stacks; ++index) {
+        this->voxels[index].color = this->cells[index] ? white : black;
+    }   
 }
 
 double GameOfLife3D::Step(double dt) {
@@ -68,9 +76,7 @@ uint32_t stack = 0;//    for (int32_t stack = 0; stack < static_cast<int32_t>(st
 
     this->cells = std::move(next_cells); // Ensure consistent type
 
-    for (int index = 0; index < rows * cols; ++index) {
-        this->voxels[index].color = this->cells[index] ? white : black;
-    }
+    VoxelToColor();
 
     this->simulation_time += dt;
     return dt;
