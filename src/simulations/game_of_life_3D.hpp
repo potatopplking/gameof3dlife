@@ -16,7 +16,7 @@ public:
     double Step(double dt) override;
 
 private:
-    uint32_t SumNeighbouringCells(int32_t row, int32_t col);
+    uint32_t SumNeighbouringCells(int32_t row, int32_t col, int32_t stack);
     void VoxelToColor();
 
     std::vector<uint8_t> cells;

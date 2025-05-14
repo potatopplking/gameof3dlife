@@ -24,7 +24,13 @@ public:
     double GetStepSize() const { return step; }
     uint32_t IndexFromSimCoords(int32_t row, int32_t col, int32_t stack) const // TODO order
     {
-        auto [ rows, cols, stacks ] = GetGridSize().elements; 
+        auto [ rows, cols, stacks ] = GetGridSize().elements;
+        if (row < 0 || row >= rows ||
+            col < 0 || col >= cols ||
+            stack < 0 || stack >= stacks)
+        {
+            throw std::out_of_range("Wrong index for voxel");
+        }
         return (stack * (rows*cols)) + (row * cols) + col;
     }
 
