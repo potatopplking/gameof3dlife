@@ -8,6 +8,7 @@ namespace Simulation {
 // locally redefining color to more transparent version
 const auto black = utils::Color{  0,   0,   0, 200};
 const auto white = utils::Color{255, 255, 255, 200};
+const auto transparent = utils::Color{0, 0, 0, 0};
 
 // TODO indexing!!!
 // TODO move index from sim coords to base
@@ -50,7 +51,7 @@ void GameOfLife3D::InitRandomState() {
 void GameOfLife3D::VoxelToColor() {
     auto [rows, cols, stacks] = this->gridSize.elements;
     for (int index = 0; index < rows * cols * stacks; ++index) {
-        this->voxels[index].color = this->cells[index] ? white : black;
+        this->voxels[index].color = this->cells[index] ? white : transparent;
     }   
 }
 
