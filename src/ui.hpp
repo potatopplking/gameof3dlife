@@ -35,12 +35,13 @@ public:
     void SetPan(MousePos diff);
     void SetZoom(float scroll_diff);
     void SetRotation(MousePos diff);
+    void LookAt(utils::CSVec<CS::CARTESIAN, double, 3> pos, double from_distance);
 
     void SetPerspectiveProjection();
     void TranslateRotateScene();
 
     double aspect;
-    utils::CSVec<CS::CARTESIAN, double, 3> lookAt;
+    utils::CSVec<CS::CARTESIAN, double, 3> lookAt; // TODO a bit confusing, lookAt always has to be zero, we use offset instead
     utils::CSVec<CS::CARTESIAN, double, 3> up;
     utils::CSVec<CS::CARTESIAN, double, 3> offset;
     utils::CSVec<CS::SPHERICAL, double, 3> pos; // TODO move to private

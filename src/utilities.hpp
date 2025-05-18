@@ -211,6 +211,10 @@ class CSVec : public Vec<ElementT,dimension> {
         this->elements = vec.elements;
     }
 
+    CSVec(const Vec<ElementT, dimension>& other) {
+        this->elements = other.elements;
+    }
+
     template <CoordinateSystem SourceCS>
     CSVec(const CSVec<SourceCS, ElementT, dimension>& from_vec) {
         Log::profiling_debug( "CSVec(CSVec)" );

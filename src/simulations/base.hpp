@@ -22,16 +22,21 @@ public:
     const std::vector<Voxel>& GetVoxels() const { return voxels; }
     double GetSimulationTime() const { return simulation_time; }
     double GetStepSize() const { return step; }
-    uint32_t IndexFromSimCoords(int32_t row, int32_t col, int32_t stack) const // TODO order
+    uint32_t IndexFromSimCoords(int32_t row, int32_t col, int32_t stack) const
     {
         auto [ rows, cols, stacks ] = GetGridSize().elements;
-        if (row < 0 || row >= rows ||
-            col < 0 || col >= cols ||
+        if (  row < 0 || row >= rows ||
+              col < 0 || col >= cols ||
             stack < 0 || stack >= stacks)
         {
             throw std::out_of_range("Wrong index for voxel");
         }
         return (stack * (rows*cols)) + (row * cols) + col;
+    }
+    utils::Vec<double,3> GetCenter() const
+    {
+        auto [ rows, cols, stacks ] = GetGridSize().elements;
+        return utils::Vec<double,3>{rows/2, cols/2, stacks/2};
     }
 
 protected:

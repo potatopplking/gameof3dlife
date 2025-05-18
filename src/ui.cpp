@@ -2,6 +2,7 @@
 #include <vector>
 #include <numbers>
 #include <iostream>
+#include <algorithm>
 
 #include <SDL3/SDL.h>
 #include <GL/glew.h>
@@ -296,6 +297,8 @@ void Window::Render(const std::vector<Voxel>& voxels) {
     camera.SetPerspectiveProjection();
     camera.TranslateRotateScene();
 
+    DrawAxis();
+
     if (this->alpha_enabled) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -319,7 +322,6 @@ void Window::Render(const std::vector<Voxel>& voxels) {
         glDepthMask(GL_TRUE);
     }
 
-    DrawAxis();
     enable_light();
     this->Flush();
 }
@@ -374,6 +376,9 @@ void Window::Run()
 void Window::SetSimulation(std::unique_ptr<Simulation::BaseSimulation> new_sim)
 {
   this->sim = std::move(new_sim);
+  auto [rows,cols,stacks] = this->sim->GetGridSize().elements;
+  auto distance = std::max({rows,cols,stacks});
+  this->camera.LookAt(this->sim->GetCenter(), distance);
 }
 
 void Window::ResetSimulation() {
@@ -386,7 +391,7 @@ void Camera::SetPerspectiveProjection()
 {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0f, this->aspect, 0.1f, 1000.0f); // Increased far clipping plane from 100.0f to 1000.0f
+    gluPerspective(45.0f, this->aspect, 0.1f, 1000.0f);
 }   
 
 void Camera::TranslateRotateScene()
@@ -454,5 +459,10 @@ void Camera::SetRotation(MousePos diff)
     Log::debug("	Camera pos cartesian: ", eye_pos_cartesian);
 }
 
+void Camera::LookAt(utils::CSVec<CS::CARTESIAN, double, 3> pos, double from_distance)
+{
+    this->offset = pos;
+    this->SetZoom(from_distance);
+}
 
 }
