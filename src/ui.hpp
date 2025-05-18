@@ -87,6 +87,8 @@ class Window {
 
     private:
         bool exit_requested = false;
+        bool wireframe_enabled = false;
+        bool alpha_enabled = false;
 
         void ProcessEvents();
         bool ExitRequested();

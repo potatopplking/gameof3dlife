@@ -210,6 +210,10 @@ void Window::ProcessEvents()
                 } else if (kbd_event.key == ' ') { // Spacebar to toggle pause
                     this->simulation_paused = !this->simulation_paused;
                     Log::info(this->simulation_paused ? "Simulation paused" : "Simulation resumed");
+                } else if (kbd_event.key == 'a') {
+                    this->alpha_enabled = !this->alpha_enabled;
+                } else if (kbd_event.key == 'z') {
+                    this->wireframe_enabled = !this->wireframe_enabled;
                 }
                 break;
             }
@@ -292,9 +296,17 @@ void Window::Render(const std::vector<Voxel>& voxels) {
     camera.SetPerspectiveProjection();
     camera.TranslateRotateScene();
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDepthMask(GL_FALSE);
+    if (this->alpha_enabled) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDepthMask(GL_FALSE);
+    }
+
+    if (this->wireframe_enabled) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    } else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 
     for (auto& voxel : voxels) {
         auto [R,G,B,A] = voxel.color.elements;
@@ -302,8 +314,10 @@ void Window::Render(const std::vector<Voxel>& voxels) {
         draw_cube(voxel.position);
     }
 
-    glDisable(GL_BLEND);
-    glDepthMask(GL_TRUE);
+    if (this->alpha_enabled) {
+        glDisable(GL_BLEND);
+        glDepthMask(GL_TRUE);
+    }
 
     DrawAxis();
     enable_light();
