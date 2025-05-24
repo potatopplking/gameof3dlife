@@ -11,10 +11,8 @@
 namespace UI
 {
 
-
-
+// Helper functions for rendering, these should ideally be replaced with some shader
 void draw_cube(utils::SimCoords pos = {0,0,0});
-
 void enable_light();
 
 
@@ -90,6 +88,10 @@ class Window {
         bool exit_requested = false;
         bool wireframe_enabled = false;
         bool alpha_enabled = false;
+        // time measurement
+        utils::TimeStats render_time;
+        utils::TimeStats sim_time;
+        utils::TimeStats total_time;
 
         void ProcessEvents();
         bool ExitRequested();

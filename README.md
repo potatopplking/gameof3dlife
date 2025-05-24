@@ -8,9 +8,15 @@
 - [x] Fix 2D GoL rules
 - [x] Fix timing
 - [x] Add pause
+- [x] 3D GoL
+- [ ] Performance measurement
+- [ ] GoL performance improvement
+- [ ] Fix TODOs
 - [ ] Better (and more efficient) voxel drawing
-    - [ ] Wireframe mode
-    - [ ] Alpha - change visibility?
-- [ ] 3D GoL
+    - [x] Wireframe mode
+    - [x] Alpha - change visibility?
+    - [ ] custom shaders? only pass color + alpha to the GPU
 - [ ] Fluid simulation
+- [ ] Decrease compilation time (pimpl)
 - [ ] CPython interface?
+- [ ] [draw architecture](https://plantuml.com/component-diagram)

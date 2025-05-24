@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cmath>
+#include <chrono>
 #include <ranges>
 #include <cassert>
 #include <cstdint>
@@ -356,6 +357,70 @@ Vec<T,dim> CrossProduct(const Vec<T,dim>& a, const Vec<T,dim>& b) {
     }
     return result;
 }
+
+class TimeStats
+{
+  using clock = std::chrono::high_resolution_clock;
+
+  public:
+    TimeStats() :
+        count(0),
+        mean(0.0),
+        min(0.0),
+        max(0.0)
+    {
+        this->start = clock::now();
+    }
+
+    void Start()
+    {
+        this->start = clock::now();
+    }
+
+    void Stop()
+    {
+        auto stop = clock::now();
+        auto diff_us = std::chrono::duration<double>(stop - start);
+        Add(diff_us.count());   
+    }
+      
+    double Min(void)  const { return this->min;  };
+    double Max(void)  const { return this->max;  };
+    double Mean(void) const { return this->mean; };
+    double FPS(void) const  { return 1.0 / this->mean; };
+
+    friend std::ostream& operator<<(std::ostream& os, const TimeStats& obj) {
+        std::cout << "{ ";
+        std::cout << "max: "     << obj.Max()
+                  << "s, min: "  << obj.Min()
+                  << "s, mean: " << obj.Mean()
+                  << "s, FPS: "  << obj.FPS();
+        std::cout << " }";
+        return os;
+    }
+
+
+  private:
+    double min;
+    double max;
+    double mean;
+    size_t count;
+    std::chrono::time_point<clock> start;
+
+    void Add(double value)
+    {
+      if (value > this->max) {
+        this->max = value;
+      } else if (value < this->min) {
+        this->min = value;
+      }
+      auto& N = this->count;
+      auto& m = this->mean;
+      
+      m = (m * N + value) / (N+1);
+      N++;
+    }
+};
 
 /*
  * Helper classes and utils

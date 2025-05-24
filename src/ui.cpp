@@ -1,4 +1,5 @@
 #include <cmath>
+#include <chrono>
 #include <vector>
 #include <numbers>
 #include <iostream>
@@ -215,6 +216,13 @@ void Window::ProcessEvents()
                     this->alpha_enabled = !this->alpha_enabled;
                 } else if (kbd_event.key == 'z') {
                     this->wireframe_enabled = !this->wireframe_enabled;
+                } else if (kbd_event.key == '`') {
+                    Log::info("Stats:");
+                    Log::info("total: ", this->total_time);
+                    Log::info("render: ", this->render_time);
+                    Log::info("sim: ", this->sim_time);
+                } else {
+                    Log::info("Unknown key pressed");
                 }
                 break;
             }
@@ -362,14 +370,20 @@ double Window::GetUptime()
 void Window::Run()
 {
     while (!ExitRequested()) {
+        this->total_time.Start();
         ProcessEvents();
         UpdateTime();
         if (!this->simulation_paused) {
+            this->sim_time.Start();
             UpdateSimulation();
+            this->sim_time.Stop();
         }
 
         auto voxels = this->sim->GetVoxels();
+        this->render_time.Start();
         Render(voxels);
+        this->render_time.Stop();
+        this->total_time.Stop();
     }
 }
 
