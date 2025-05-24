@@ -217,10 +217,7 @@ void Window::ProcessEvents()
                 } else if (kbd_event.key == 'z') {
                     this->wireframe_enabled = !this->wireframe_enabled;
                 } else if (kbd_event.key == '`') {
-                    Log::info("Stats:");
-                    Log::info("total: ", this->total_time);
-                    Log::info("render: ", this->render_time);
-                    Log::info("sim: ", this->sim_time);
+                    PrintTimeStats();
                 } else {
                     Log::info("Unknown key pressed");
                 }
@@ -362,6 +359,14 @@ void Window::UpdateTime()
     this->real_time_elapsed = SDL_GetTicks() / 1000.0;
 }
 
+void Window::PrintTimeStats()
+{
+    Log::info("Stats:");
+    Log::info("total: ", this->total_time);
+    Log::info("render: ", this->render_time);
+    Log::info("sim: ", this->sim_time);
+}
+
 double Window::GetUptime()
 {
     return this->real_time_elapsed;
@@ -385,6 +390,7 @@ void Window::Run()
         this->render_time.Stop();
         this->total_time.Stop();
     }
+    this->PrintTimeStats();
 }
 
 void Window::SetSimulation(std::unique_ptr<Simulation::BaseSimulation> new_sim)

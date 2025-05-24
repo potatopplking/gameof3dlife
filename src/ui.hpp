@@ -82,6 +82,7 @@ class Window {
         void Resize(int width, int height);
         void Resize(utils::Vec<int, 2> new_size);
         void ResetSimulation(); // Added declaration for SimulationReset
+        void PrintTimeStats();
         double GetUptime();
 
     private:
