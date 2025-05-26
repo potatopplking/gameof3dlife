@@ -9,7 +9,7 @@
 - [x] Fix timing
 - [x] Add pause
 - [x] 3D GoL
-- [ ] Performance measurement
+- [x] Performance measurement
 - [ ] GoL performance improvement
 - [ ] Fix TODOs
 - [ ] Better (and more efficient) voxel drawing
@@ -20,3 +20,11 @@
 - [ ] Decrease compilation time (pimpl)
 - [ ] CPython interface?
 - [ ] [draw architecture](https://plantuml.com/component-diagram)
+
+## Performance
+
+For 3D GoL 50^3 cells
+
+| Commit  | Render (ms) | Simulation (ms) |
+| ---     | ---         | ---             |
+| b54ec9c | 40.161      | 39.5389         |
