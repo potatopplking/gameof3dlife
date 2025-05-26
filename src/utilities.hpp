@@ -391,10 +391,10 @@ class TimeStats
 
     friend std::ostream& operator<<(std::ostream& os, const TimeStats& obj) {
         std::cout << "{ ";
-        std::cout << "max: "     << obj.Max()
-                  << "s, min: "  << obj.Min()
-                  << "s, mean: " << obj.Mean()
-                  << "s, FPS: "  << obj.FPS();
+        std::cout << "max: "     <<  1000.0 * obj.Max()
+                  << "ms, min: "  << 1000.0 * obj.Min()
+                  << "ms, mean: " << 1000.0 * obj.Mean()
+                  << "ms, FPS: "  << obj.FPS();
         std::cout << " }";
         return os;
     }
@@ -421,6 +421,26 @@ class TimeStats
       N++;
     }
 };
+
+template <class T>
+  class TrackingAllocator : public std::allocator<T>
+  {
+    public:
+      inline T* allocate(size_t count)  {
+        this->allocations++;
+        Log::debug("Allocating type ", typeid(T).name());
+        return static_cast<T*>(::operator new(sizeof(T) * count));
+      }
+
+      inline void deallocate(T* ptr, size_t count)  {
+        this->allocations--;
+        Log::debug("Deallocating type ", typeid(T).name());
+        ::operator delete(ptr);
+      }
+
+    private:
+      size_t allocations = 0;
+  };
 
 /*
  * Helper classes and utils

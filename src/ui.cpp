@@ -295,7 +295,7 @@ void Window::UpdateSimulation() {
     }
 }
 
-void Window::Render(const std::vector<Voxel>& voxels) {
+void Window::Render(const std::vector<Voxel, utils::TrackingAllocator<Voxel>>& voxels) {
     ClearWindow(utils::Color{100,0,0,255});
     glViewport(0, 0, this->size[0], this->size[1]);
 
@@ -384,7 +384,7 @@ void Window::Run()
             this->sim_time.Stop();
         }
 
-        auto voxels = this->sim->GetVoxels();
+        const auto& voxels = this->sim->GetVoxels();
         this->render_time.Start();
         Render(voxels);
         this->render_time.Stop();

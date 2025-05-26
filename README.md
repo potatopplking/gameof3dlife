@@ -11,6 +11,7 @@
 - [x] 3D GoL
 - [x] Performance measurement
 - [ ] GoL performance improvement
+- [ ] -Wall
 - [ ] Fix TODOs
 - [ ] Better (and more efficient) voxel drawing
     - [x] Wireframe mode
@@ -23,8 +24,8 @@
 
 ## Performance
 
-For 3D GoL 50^3 cells
+For 3D GoL 50^3 cells. All times in ms. Simulating until the whole space is filled with cubes. In fullscreen
 
-| Commit  | Render (ms) | Simulation (ms) |
-| ---     | ---         | ---             |
-| b54ec9c | 40.161      | 39.5389         |
+| Commit  | Render 50^3 | Simulation 50^3 | Render 100^3 | Simulation 100^3 |
+| ---     | ---         | ---             | ---          | ---              |
+| b54ec9c | 40.161      | 3.97671         | 312.757      | 381.396          | 

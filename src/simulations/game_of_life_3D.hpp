@@ -19,7 +19,8 @@ private:
     uint32_t SumNeighbouringCells(int32_t row, int32_t col, int32_t stack);
     void VoxelToColor();
 
-    std::vector<uint8_t> cells;
+    std::vector<uint8_t, utils::TrackingAllocator<uint8_t>> cells_current;
+    std::vector<uint8_t, utils::TrackingAllocator<uint8_t>> cells_next;
 };
 
 }

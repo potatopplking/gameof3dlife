@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "voxel.hpp"
+#include "utilities.hpp"
 
 namespace Simulation {
 
@@ -13,15 +14,34 @@ public:
 
     BaseSimulation(uint32_t rows, uint32_t cols, uint32_t stacks) :
       gridSize{rows, cols, stacks}
-    {}
+    {
+      auto size = rows * cols * stacks;
+      this->voxels.resize(size);
+    }
 
     virtual void InitRandomState() = 0;
     virtual double Step(double dt) = 0;
 
-    const utils::Vec<int32_t, 3>& GetGridSize() const { return gridSize; }
-    const std::vector<Voxel>& GetVoxels() const { return voxels; }
-    double GetSimulationTime() const { return simulation_time; }
-    double GetStepSize() const { return step; }
+    inline const utils::Vec<int32_t, 3>& GetGridSize() const
+    {
+		return gridSize;
+    }
+
+    inline const std::vector<Voxel, utils::TrackingAllocator<Voxel>>& GetVoxels() const
+    {
+		return voxels;
+    }
+
+    inline double GetSimulationTime() const
+	{
+		return simulation_time;
+	}
+
+    inline double GetStepSize() const
+	{
+		return step;
+	}
+
     uint32_t IndexFromSimCoords(int32_t row, int32_t col, int32_t stack) const
     {
         auto [ rows, cols, stacks ] = GetGridSize().elements;
@@ -33,6 +53,7 @@ public:
         }
         return (stack * (rows*cols)) + (row * cols) + col;
     }
+
     utils::Vec<double,3> GetCenter() const
     {
         auto [ rows, cols, stacks ] = GetGridSize().elements;
@@ -41,7 +62,7 @@ public:
 
 protected:
     utils::Vec<int32_t, 3> gridSize;
-    std::vector<Voxel> voxels;
+    std::vector<Voxel, utils::TrackingAllocator<Voxel>> voxels;
     double simulation_time = 0.0;
     double step = 1.0;
 };
