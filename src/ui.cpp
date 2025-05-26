@@ -97,11 +97,11 @@ void enable_light() {
 }
 
 Window::Window(int width, int height) :
-    size{ width,height },
-    mouse_prev_pos{ 0,0 },
     renderer{ nullptr },
     window{ nullptr },
-    context{ nullptr }
+    context{ nullptr },
+    size{ width,height },
+    mouse_prev_pos{ 0,0 }
 {
     using namespace utils;
     Log::debug("Window constructor called");
@@ -283,15 +283,11 @@ void Window::UpdateSimulation() {
     constexpr double t_conversion_factor = 0.5;
 
     double current_time = GetUptime();
-    static double last_time = current_time;
     static double next_update_time = current_time;
-    
-    double delta_time = current_time - last_time;
-    last_time = current_time;
 
     if (current_time >= next_update_time) {
         this->sim->Step(0.1);
-        next_update_time = current_time + this->sim->GetStepSize()*t_conversion_factor;
+        next_update_time = current_time + this->sim->GetStepSize() * t_conversion_factor;
     }
 }
 
@@ -419,8 +415,6 @@ void Camera::TranslateRotateScene()
     using namespace utils;
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    auto eye_pos_cartesian = CSVec<CoordinateSystem::CARTESIAN, double, 3>(pos);
-    //auto up = CSVec<CoordinateSystem::CARTESIAN, double, 3>{ 0.0, 1.0, 0.0 };
     auto eye_pos = CSVec<CoordinateSystem::CARTESIAN, double, 3>(pos) + offset;
     auto look_at = lookAt + offset;
     gluLookAt(eye_pos[0],

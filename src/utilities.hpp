@@ -401,10 +401,10 @@ class TimeStats
 
 
   private:
-    double min;
-    double max;
-    double mean;
-    size_t count;
+    size_t count = 0;
+    double mean = 0.0;
+    double min = std::numeric_limits<double>::max();
+    double max = 0.0;
     std::chrono::time_point<clock> start;
 
     void Add(double value)
