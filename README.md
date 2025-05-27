@@ -1,26 +1,17 @@
 ## TODO
 
-- [x] add SDL to VS solution - [guide here](https://github.com/libsdl-org/SDL/blob/main/docs/INTRO-visualstudio.md)
-- [x] migrate to SDL3
-- [ ] Finish math tests
-- [x] Fix camera rotate
-- [x] Fix camera pan
-- [x] Fix 2D GoL rules
-- [x] Fix timing
-- [x] Add pause
-- [x] 3D GoL
-- [x] Performance measurement
-- [ ] GoL performance improvement
-- [ ] -Wall
+- [ ] Simulation playback
+    - [ ] record simulation
+    - [ ] playback
 - [ ] Fix TODOs
 - [ ] Better (and more efficient) voxel drawing
-    - [x] Wireframe mode
-    - [x] Alpha - change visibility?
     - [ ] custom shaders? only pass color + alpha to the GPU
-- [ ] Fluid simulation
 - [ ] Decrease compilation time (pimpl)
+- [ ] Formatter
+- [ ] Profiling - when simulation is done
 - [ ] CPython interface?
 - [ ] [draw architecture](https://plantuml.com/component-diagram)
+    - [ ] refactor ?
 
 ## Performance
 
