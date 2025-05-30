@@ -3,8 +3,10 @@
 
 #include "utilities.hpp"
 #include "voxel.hpp"
-#include "simulations/game_of_life_3D.hpp"
 #include "ui.hpp"
+#include "simulations/game_of_life_3D.hpp"
+#include "simulations/recorder.hpp"
+#include "simulations/playback.hpp"
 
 int main(void)
 {
@@ -13,7 +15,17 @@ int main(void)
     UI::Window window{800, 600};
     window.Init();
 
-    window.SetSimulation(std::make_unique<Simulation::GameOfLife3D>(50, 50, 50));
+    
+    auto playback = Simulation::Playback("gol3d.sim");
+    
+
+
+    window.SetSimulation( 
+        std::make_unique<Simulation::Recorder>(
+            std::make_unique<Simulation::GameOfLife3D>(50, 50, 50),
+            std::string("gol3d.sim")
+        )
+    );
 
     window.Run();
 

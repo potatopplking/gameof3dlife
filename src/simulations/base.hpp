@@ -28,25 +28,25 @@ public:
     virtual void InitRandomState() = 0;
     virtual double Step(double dt) = 0;
 
-    inline const utils::Vec<int32_t, 3>& GetGridSize() const
+    virtual inline const utils::Vec<int32_t, 3>& GetGridSize() const
     {
-		return gridSize;
+        return gridSize;
     }
 
-    inline const std::vector<Voxel, utils::TrackingAllocator<Voxel>>& GetVoxels() const
+    virtual inline const std::vector<Voxel, utils::TrackingAllocator<Voxel>>& GetVoxels() const
     {
-		return voxels;
+        return voxels;
     }
 
-    inline double GetSimulationTime() const
-	{
-		return simulation_time;
-	}
+    virtual inline double GetSimulationTime() const
+    {
+        return simulation_time;
+    }
 
-    inline double GetStepSize() const
-	{
-		return step;
-	}
+    virtual inline double GetStepSize() const
+    {
+        return step;
+    }
 
     uint32_t IndexFromSimCoords(int32_t row, int32_t col, int32_t stack) const
     {

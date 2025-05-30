@@ -1,7 +1,10 @@
 #pragma once
 
 #include <memory>
+#include <iostream>
+#include <fstream>
 
+#include "log.hpp"
 #include "utilities.hpp"
 #include "simulations/base.hpp"
 
@@ -16,11 +19,21 @@ class Recorder : public BaseSimulation
 {
 public:
     Recorder(std::unique_ptr<Simulation::BaseSimulation> sim, std::string filename) :
-        m_Filename(filename)
+        m_Simulation(std::move(sim))
     {
-        m_Simulation = std::move(sim);
+        m_File = std::ofstream(filename);
+        if (!m_File.is_open()) {
+            Log::critical("Failed to open file", filename);
+            throw std::runtime_error("Failed to open file");
+        }
+        Log::info("Recording to file ", filename);
+        SaveHeader();
     }
-    ~Recorder() {}
+
+    ~Recorder()
+    {
+        m_File.close();
+    }
 
     /*
      * Passthrough methods
@@ -39,26 +52,52 @@ public:
         return m_Simulation->Step(dt);
     }
 
+    inline const std::vector<Voxel, utils::TrackingAllocator<Voxel>>& GetVoxels() const override
+    {
+        return m_Simulation->GetVoxels();
+    }
 
+    inline double GetSimulationTime() const override
+    {
+        return m_Simulation->GetSimulationTime();
+    }
 
-    void Simulate(uint64_t steps, std::string filename = "") {
+    inline double GetStepSize() const override
+    {
+        return m_Simulation->GetStepSize();
+    }
 
+    inline const utils::Vec<int32_t, 3>& GetGridSize() const override
+    {
+        return m_Simulation->GetGridSize();
     }
 
     /*
-     * Low-level functions, but might still be useful to user
+     * Recording related functions
      */
-    void Step() {
 
+    void Simulate(uint64_t steps) {
+        
     }
 
-    void Save() {
 
-    }
 
 private:
     std::unique_ptr<Simulation::BaseSimulation> m_Simulation;
-    std::string m_Filename;
+    std::ofstream m_File;
+
+    void SaveStep()
+    {
+        
+    }
+
+    void SaveHeader()
+    {
+        auto [ rows, cols, stacks ] = m_Simulation->GetGridSize().elements;
+        m_File.write(reinterpret_cast<char*>(&rows), sizeof(rows));
+        m_File.write(reinterpret_cast<char*>(&cols), sizeof(cols));
+        m_File.write(reinterpret_cast<char*>(&stacks), sizeof(stacks));
+    }
 };
 
 }
