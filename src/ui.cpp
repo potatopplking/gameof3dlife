@@ -10,6 +10,7 @@
 
 #include "ui.hpp"
 #include "utilities.hpp"
+#include "simulations/base.hpp"
 
 // A hack to get the thing to compile on Windows:
 // this probably due to the fact that GLEW has to be compiled with C linkage,

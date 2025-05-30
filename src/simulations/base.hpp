@@ -19,6 +19,12 @@ public:
       this->voxels.resize(size);
     }
 
+    BaseSimulation() :
+      gridSize{0,0,0}
+    {
+
+    }
+
     virtual void InitRandomState() = 0;
     virtual double Step(double dt) = 0;
 

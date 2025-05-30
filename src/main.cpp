@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 
 #include "utilities.hpp"
 #include "voxel.hpp"
