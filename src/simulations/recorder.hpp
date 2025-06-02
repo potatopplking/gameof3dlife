@@ -3,6 +3,7 @@
 #include <memory>
 #include <iostream>
 #include <fstream>
+#include<typeinfo> // TODO delete
 
 #include "log.hpp"
 #include "utilities.hpp"
@@ -45,11 +46,14 @@ public:
     void InitRandomState() override
     {
         m_Simulation->InitRandomState();
+        m_File.seekp(0);
+        SaveHeader();
     }
 
     double Step(double dt) override {
-        // TODO record
-        return m_Simulation->Step(dt);
+        double actual_dt = m_Simulation->Step(dt);
+        this->SaveStep(actual_dt);
+        return actual_dt;
     }
 
     inline const std::vector<Voxel, utils::TrackingAllocator<Voxel>>& GetVoxels() const override
@@ -86,9 +90,23 @@ private:
     std::unique_ptr<Simulation::BaseSimulation> m_Simulation;
     std::ofstream m_File;
 
-    void SaveStep()
+    void SaveStep(double dt)
     {
-        
+        auto& voxels = this->GetVoxels();
+        m_File.write(reinterpret_cast<char*>(&dt), sizeof(dt));
+        auto [ rows, cols, stacks ] = m_Simulation->GetGridSize().elements;
+        for (auto row = 0; row < rows; row++) {
+            for (auto col = 0; col < cols; col++) {
+                for (auto stack = 0; stack < stacks; stack++) {
+                    auto& voxel = voxels[IndexFromSimCoords(row, col, stack)];
+                    auto [R,G,B,A] = voxel.color.elements;
+                    m_File.write(reinterpret_cast<char*>(&R), 1);
+                    m_File.write(reinterpret_cast<char*>(&G), 1);
+                    m_File.write(reinterpret_cast<char*>(&B), 1);
+                    m_File.write(reinterpret_cast<char*>(&A), 1);
+                }
+            }
+        }
     }
 
     void SaveHeader()
@@ -97,6 +115,9 @@ private:
         m_File.write(reinterpret_cast<char*>(&rows), sizeof(rows));
         m_File.write(reinterpret_cast<char*>(&cols), sizeof(cols));
         m_File.write(reinterpret_cast<char*>(&stacks), sizeof(stacks));
+        this->gridSize.elements[0] = rows;
+        this->gridSize.elements[1] = cols;
+        this->gridSize.elements[2] = stacks;
     }
 };
 

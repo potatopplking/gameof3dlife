@@ -43,6 +43,11 @@ enum class CartesianIndex {
   Z
 };
 
+enum class SimulationIndex {
+  ROWS = 0,
+  COLS,
+  STACKS
+};
 
 /*
  * Functions

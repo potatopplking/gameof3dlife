@@ -15,8 +15,7 @@ public:
     BaseSimulation(uint32_t rows, uint32_t cols, uint32_t stacks) :
       gridSize{rows, cols, stacks}
     {
-      auto size = rows * cols * stacks;
-      this->voxels.resize(size);
+        ResizeVoxels();
     }
 
     BaseSimulation() :
@@ -71,6 +70,13 @@ protected:
     std::vector<Voxel, utils::TrackingAllocator<Voxel>> voxels;
     double simulation_time = 0.0;
     double step = 1.0;
+
+    void ResizeVoxels()
+    {
+        auto [rows, cols, stacks] = this->gridSize.elements;
+        auto size = rows * cols * stacks;
+        this->voxels.resize(size);
+    }
 };
 
 } // namespace Simulation

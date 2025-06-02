@@ -15,17 +15,18 @@ int main(void)
     UI::Window window{800, 600};
     window.Init();
 
-    
-    auto playback = Simulation::Playback("gol3d.sim");
-    
-
-
+#if 1
+    window.SetSimulation(
+        std::make_unique<Simulation::Playback>("gol3d.sim")
+    );
+#else
     window.SetSimulation( 
         std::make_unique<Simulation::Recorder>(
             std::make_unique<Simulation::GameOfLife3D>(50, 50, 50),
             std::string("gol3d.sim")
         )
     );
+#endif
 
     window.Run();
 

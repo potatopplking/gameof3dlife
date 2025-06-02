@@ -1,9 +1,11 @@
 ## TODO
 
-- [ ] Simulation playback
-    - [ ] record simulation
-    - [ ] playback
+- [x] Simulation playback
+    - [x] record simulation
+    - [x] playback
 - [ ] Fix TODOs
+- [ ] Use CVec with SimulationCoords for simulation coordinates
+- [ ] remove position from voxel
 - [ ] Better (and more efficient) voxel drawing
     - [ ] custom shaders? only pass color + alpha to the GPU
 - [ ] Decrease compilation time (pimpl)
