@@ -3,6 +3,9 @@
 - [x] Simulation playback
     - [x] record simulation
     - [x] playback
+- [ ] simple FDTD
+    - [ ] 2D variant?
+- [ ] Load Kicad 3D model
 - [ ] Fix TODOs
 - [ ] Use CVec with SimulationCoords for simulation coordinates
 - [ ] remove position from voxel
