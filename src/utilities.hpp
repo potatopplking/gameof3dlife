@@ -458,4 +458,16 @@ const auto black = Color{0,0,0,255};
 const auto white = Color{255,255,255,255};
 
 
+namespace constants {
+
+constexpr double C0     = 299792458;
+constexpr double epsi_0 = 8.854187817e-12;
+constexpr double mu_0   = 12.566370614e-7;
+
+constexpr double me_kg  = 9.10938188e-031;
+constexpr double me_MeV = 0.510998902;
+constexpr double q_e    = -1.602176462e-19;
+
+
+}
 }

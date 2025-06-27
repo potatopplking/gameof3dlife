@@ -281,6 +281,10 @@ auto [R,G,B,A] = c.elements;
 void Window::UpdateSimulation() {
     // conversion factor between real and simulation time:
     // t_conversion_factor = real_time / simulation_time;
+    
+    this->sim->Step(0.1);
+    return;
+
     constexpr double t_conversion_factor = 0.5;
 
     double current_time = GetUptime();

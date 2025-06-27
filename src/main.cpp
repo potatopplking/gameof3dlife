@@ -7,6 +7,7 @@
 #include "simulations/game_of_life_3D.hpp"
 #include "simulations/recorder.hpp"
 #include "simulations/playback.hpp"
+#include "simulations/fdtd.hpp"
 
 int main(void)
 {
@@ -15,6 +16,12 @@ int main(void)
     UI::Window window{800, 600};
     window.Init();
 
+
+    window.SetSimulation(
+        std::make_unique<Simulation::FDTD_1D>(100)
+    );
+
+/*
 #if 1
     window.SetSimulation(
         std::make_unique<Simulation::Playback>("gol3d.sim")
@@ -27,6 +34,7 @@ int main(void)
         )
     );
 #endif
+*/
 
     window.Run();
 
