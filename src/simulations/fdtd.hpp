@@ -239,7 +239,8 @@ public:
         carrier = sin(2.0*M_PI*freq_in*dt*T);
         //carrier = xx > 0.5 ? 0.0 : 1.0;
         enveloppe = 1.0;//exp( -0.5*pow((t0-T)/spread,2.0) );
-        dz[ic][jc] += carrier*enveloppe;
+        dz[1][1] += carrier*enveloppe;
+        //dz[ic][jc] += carrier*enveloppe;
         //dz[IE/4][JE/4] += carrier*enveloppe;
 
         Log::info("dt*T = ", dt*T, "\t\tcarrier = ", carrier, "\t\tenvelope = ", enveloppe, "\t\txx = ", xx);
