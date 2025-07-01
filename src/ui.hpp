@@ -97,7 +97,7 @@ class Window {
         void ProcessEvents();
         bool ExitRequested();
         void ClearWindow(utils::Color c);
-        void UpdateSimulation();
+        void UpdateSimulation(bool force);
         void Render(const std::vector<Voxel, utils::TrackingAllocator<Voxel>>& voxels);
         void DrawAxis();
         void Flush();

@@ -217,6 +217,8 @@ void Window::ProcessEvents()
                     this->alpha_enabled = !this->alpha_enabled;
                 } else if (kbd_event.key == 'z') {
                     this->wireframe_enabled = !this->wireframe_enabled;
+                } else if (kbd_event.key == 'u') {
+                    this->UpdateSimulation(true);
                 } else if (kbd_event.key == '`') {
                     PrintTimeStats();
                 } else {
@@ -278,19 +280,19 @@ auto [R,G,B,A] = c.elements;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Window::UpdateSimulation() {
+void Window::UpdateSimulation(bool force = false) {
     // conversion factor between real and simulation time:
     // t_conversion_factor = real_time / simulation_time;
     
-    this->sim->Step(0.1);
-    return;
+    //this->sim->Step(0.1);
+    //return;
 
     constexpr double t_conversion_factor = 0.5;
 
     double current_time = GetUptime();
     static double next_update_time = current_time;
 
-    if (current_time >= next_update_time) {
+    if (force || current_time >= next_update_time) {
         this->sim->Step(0.1);
         next_update_time = current_time + this->sim->GetStepSize() * t_conversion_factor;
     }
@@ -381,7 +383,7 @@ void Window::Run()
         UpdateTime();
         if (!this->simulation_paused) {
             this->sim_time.Start();
-            UpdateSimulation();
+            UpdateSimulation(true);
             this->sim_time.Stop();
         }
 
