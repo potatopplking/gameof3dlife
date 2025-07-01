@@ -18,7 +18,7 @@ int main(void)
 
 
     window.SetSimulation(
-        std::make_unique<Simulation::FDTD_1D>(100)
+        std::make_unique<Simulation::FDTD_2D>(100, 100)
     );
 
 /*

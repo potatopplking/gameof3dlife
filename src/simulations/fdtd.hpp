@@ -8,6 +8,17 @@
 
 namespace Simulation {
 
+inline utils::Color FieldStrengthToColor(double fieldValue)
+{
+    double c = std::clamp(std::abs(fieldValue), 0.0, 1.0);
+    uint8_t R = c * 255;
+    uint8_t G = (1 - c) * 255;
+    uint8_t B = 0;
+    uint8_t alpha = 255;
+
+    return utils::Color{R, G, B, alpha};
+}
+
 class FDTD_1D : public BaseSimulation {
 public:
 
@@ -149,17 +160,6 @@ private:
 
     }
 
-    inline utils::Color FieldStrengthToColor(double fieldValue)
-    {
-        double c = std::clamp(std::abs(fieldValue), 0.0, 1.0);
-        uint8_t R = c * 255;
-        uint8_t G = (1 - c) * 255;
-        uint8_t B = 0;
-        uint8_t alpha = 255;
-
-        return utils::Color{R, G, B, alpha};
-    }
-
     void VoxelToColor() {
       auto [rows, cols, stacks] = this->gridSize.elements;
       for (int index = 0; index < rows * cols * stacks; ++index) {
@@ -167,6 +167,110 @@ private:
 
       }   
     }
+};
+
+class FDTD_2D : public BaseSimulation {
+public:
+
+    FDTD_2D(uint32_t rows, uint32_t cols) :
+        BaseSimulation(rows, cols, 1)
+    {
+        dz.resize(rows, std::vector<double>(cols));
+        ez.resize(rows, std::vector<double>(cols));
+        hx.resize(rows, std::vector<double>(cols));
+        hy.resize(rows, std::vector<double>(cols));
+        ga.resize(rows, std::vector<double>(cols));
+        InitRandomState();
+    }
+
+    void InitRandomState() override
+    {
+        auto [rows, cols, _] = this->gridSize.elements;
+        int32_t stack = 0;
+        for (int32_t row = 0; row < rows; row++) {
+            for (int32_t col = 0; col < cols; col++) {
+                dz[row][col] = 0.0;
+                ez[row][col] = 0.0;
+                hx[row][col] = 0.0;
+                hy[row][col] = 0.0;
+                ga[row][col] = 1.0;
+                uint32_t index = IndexFromSimCoords(row, col, stack);
+                voxels[index].position = {row, col, stack};
+                voxels[index].color = utils::black;
+            }
+        }
+        IE = rows;
+        JE = cols;
+        ic = IE / 2;
+        jc = JE / 2;
+        T = 0.0;
+        NSTEPS = 50;
+        t0 = 20.0;
+        spread = 3.0;
+    }
+
+    double Step(double _dt) override
+    {
+        T += 1.0;   // T keeps track of the number of times FDTD loop
+                        // is executed.
+                           
+        // Calculate the Dz field
+        for (int j = 1; j < JE; j++) {
+            for (int i = 1; i < IE; i++) {
+                dz[i][j] += 0.5*(   hy[i][j] - hy[i-1][j]
+                                  - hx[i][j] + hx[i][j-1] ); 
+            }
+        }
+        
+        // Put a Gaussian pulse in the middle
+        dz[ic][jc] = exp( -0.5*pow((t0-T)/spread,2.0) );
+
+        // Calculate the Ez field
+        for (int j = 1; j < JE; j++) {
+            for (int i = 1; i < IE; i++) {
+                ez[i][j] = ga[i][j]*dz[i][j]; 
+                }
+            }
+
+        // Calculate the Hx field
+        for (int j = 0; j < JE-1; j++) {
+            for (int i = 0; i < IE-1; i++) {
+                hx[i][j] += 0.5*( ez[i][j] - ez[i][j+1] );
+            }
+        }
+        
+        // Calculate the Hy field
+        for (int j = 0; j < JE-1; j++) {
+            for (int i = 0; i < IE-1; i++) {
+                hy[i][j] += 0.5*( ez[i+1][j] - ez[i][j] );
+            }
+        }
+        VoxelToColor();
+        return _dt; // TODO
+    }
+
+    void VoxelToColor() {
+        auto [rows, cols, stacks] = this->gridSize.elements;
+        uint32_t stack = 0;
+        for (int32_t row = 0; row < rows; row++) {
+            for (int32_t col = 0; col < cols; col++) {
+                // TODO try something else other than ez
+                uint32_t index = IndexFromSimCoords(row, col, stack);
+                this->voxels[index].color = FieldStrengthToColor(ez[row][col]);
+            }
+        }
+    }   
+
+
+private:
+
+    std::vector<std::vector<double>> dz, ez, hx, hy, ga;
+    int IE, JE, ic, jc;
+    double T;
+    int NSTEPS;
+    double t0, spread;
+
+
 };
 
 
