@@ -10,7 +10,8 @@ namespace Simulation {
 
 inline utils::Color FieldStrengthToColor(double fieldValue)
 {
-    double c = std::clamp(std::abs(fieldValue), 0.0, 1.0);
+    constexpr double amplification = 5.0;
+    double c = std::clamp(std::abs(amplification * fieldValue), 0.0, 1.0);
     uint8_t R = c * 255;
     uint8_t G = (1 - c) * 255;
     uint8_t B = 0;
@@ -207,6 +208,13 @@ public:
         NSTEPS = 50;
         t0 = 20.0;
         spread = 3.0;
+
+        dx = 0.01;      // Cell size [m]
+        dt = dx/(2*utils::constants::C0); // Time step [s]
+        freq_in = 2.0e9;// Signal Frequency [Hz]
+
+
+        //freq_in = 2 * 0.5 * utils::constants::C0 / (rows * dx);
     }
 
     double Step(double _dt) override
@@ -223,7 +231,19 @@ public:
         }
         
         // Put a Gaussian pulse in the middle
-        dz[ic][jc] = exp( -0.5*pow((t0-T)/spread,2.0) );
+        //dz[ic][jc] = exp( -0.5*pow((t0-T)/spread,2.0) );
+
+        double integral_part;
+        double xx = std::modf(dt*T * freq_in, &integral_part);
+
+        carrier = sin(2.0*M_PI*freq_in*dt*T);
+        //carrier = xx > 0.5 ? 0.0 : 1.0;
+        enveloppe = 1.0;//exp( -0.5*pow((t0-T)/spread,2.0) );
+        dz[ic][jc] += carrier*enveloppe;
+        //dz[IE/4][JE/4] += carrier*enveloppe;
+
+        Log::info("dt*T = ", dt*T, "\t\tcarrier = ", carrier, "\t\tenvelope = ", enveloppe, "\t\txx = ", xx);
+        Log::info("f = ", freq_in);
 
         // Calculate the Ez field
         for (int j = 1; j < JE; j++) {
@@ -246,7 +266,8 @@ public:
             }
         }
         VoxelToColor();
-        return _dt; // TODO
+
+        return dt; // TODO
     }
 
     void VoxelToColor() {
@@ -269,6 +290,12 @@ private:
     double T;
     int NSTEPS;
     double t0, spread;
+
+    double dt, dx;
+    double freq_in;
+    double carrier;
+    double enveloppe;
+    
 
 
 };
