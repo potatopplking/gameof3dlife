@@ -27,6 +27,11 @@ public:
     virtual void InitRandomState() = 0;
     virtual double Step(double dt) = 0;
 
+    virtual void TriggerSource()
+    {
+      // test function, only applicable to FDTD simulations
+    }
+
     virtual inline const utils::Vec<int32_t, 3>& GetGridSize() const
     {
         return gridSize;

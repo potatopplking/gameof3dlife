@@ -219,6 +219,8 @@ void Window::ProcessEvents()
                     this->wireframe_enabled = !this->wireframe_enabled;
                 } else if (kbd_event.key == 'u') {
                     this->UpdateSimulation(true);
+                } else if (kbd_event.key == 'p') {
+                    this->sim->TriggerSource();
                 } else if (kbd_event.key == '`') {
                     PrintTimeStats();
                 } else {

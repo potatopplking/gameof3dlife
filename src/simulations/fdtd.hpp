@@ -233,17 +233,18 @@ public:
         // Put a Gaussian pulse in the middle
         //dz[ic][jc] = exp( -0.5*pow((t0-T)/spread,2.0) );
 
-        double integral_part;
-        double xx = std::modf(dt*T * freq_in, &integral_part);
+        // square function
+        //double integral_part;
+        //double xx = std::modf(dt*T * freq_in, &integral_part);
+        //carrier = xx > 0.5 ? 0.0 : 1.0;
 
         carrier = sin(2.0*M_PI*freq_in*dt*T);
-        //carrier = xx > 0.5 ? 0.0 : 1.0;
         enveloppe = 1.0;//exp( -0.5*pow((t0-T)/spread,2.0) );
-        dz[1][1] += carrier*enveloppe;
+        dz[1][1] += carrier * enveloppe * sourceAmplification;
         //dz[ic][jc] += carrier*enveloppe;
         //dz[IE/4][JE/4] += carrier*enveloppe;
 
-        Log::info("dt*T = ", dt*T, "\t\tcarrier = ", carrier, "\t\tenvelope = ", enveloppe, "\t\txx = ", xx);
+        Log::info("dt*T = ", dt*T, "\t\tcarrier = ", carrier, "\t\tenvelope = ", enveloppe);
         Log::info("f = ", freq_in);
 
         // Calculate the Ez field
@@ -281,7 +282,11 @@ public:
                 this->voxels[index].color = FieldStrengthToColor(ez[row][col]);
             }
         }
-    }   
+    }
+
+    void TriggerSource() override {
+      sourceAmplification = sourceAmplification > 0.01 ? 0.0 : 1.0;
+    }
 
 
 private:
@@ -297,7 +302,7 @@ private:
     double carrier;
     double enveloppe;
     
-
+    double sourceAmplification = 1.0;
 
 };
 
