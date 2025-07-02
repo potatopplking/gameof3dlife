@@ -15,7 +15,7 @@ inline utils::Color FieldStrengthToColor(double fieldValue)
     uint8_t R = c * 255;
     uint8_t G = (1 - c) * 255;
     uint8_t B = 0;
-    uint8_t alpha = 255;
+    uint8_t alpha = c * 255;
 
     return utils::Color{R, G, B, alpha};
 }

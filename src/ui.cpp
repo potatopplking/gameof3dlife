@@ -301,7 +301,7 @@ void Window::UpdateSimulation(bool force = false) {
 }
 
 void Window::Render(const std::vector<Voxel, utils::TrackingAllocator<Voxel>>& voxels) {
-    ClearWindow(utils::Color{100,0,0,255});
+    ClearWindow(utils::Color{0,0,50,255});
     glViewport(0, 0, this->size[0], this->size[1]);
 
     camera.SetPerspectiveProjection();
