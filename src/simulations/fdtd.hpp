@@ -307,4 +307,182 @@ private:
 };
 
 
+class FDTD_3D : public BaseSimulation {
+public:
+
+    FDTD_3D(uint32_t rows, uint32_t cols, uint32_t stacks) :
+        BaseSimulation(rows, cols, stacks)
+    {
+        using vd = std::vector<double>;
+        dz.resize(rows, std::vector<vd>(cols, vd(stacks)));
+        InitRandomState();
+    }
+
+    void InitRandomState() override
+    {
+        // TODO tady
+        auto [rows, cols, stacks] = this->gridSize.elements;
+        for (int32_t row = 0; row < rows; row++) {
+            for (int32_t col = 0; col < cols; col++) {
+                for (int32_t stack = 0; stack < stacks; stack++) {
+                    dz[row][col][stack] = 0.0;
+                    ez[row][col][stack] = 0.0;
+                    hx[row][col][stack] = 0.0;
+                    hy[row][col][stack] = 0.0;
+                    uint32_t index = IndexFromSimCoords(row, col, stack);
+                    voxels[index].position = {row, col, stack};
+                    voxels[index].color = utils::black;
+                }
+            }
+        }
+//        IE = rows;
+//        JE = cols;
+//        ic = IE / 2;
+//        jc = JE / 2;
+//        T = 0.0;
+//        NSTEPS = 50;
+//        t0 = 20.0;
+//        spread = 3.0;
+//
+//        dx = 0.01;      // Cell size [m]
+//        dt = dx/(2*utils::constants::C0); // Time step [s]
+//        freq_in = 2.0e9;// Signal Frequency [Hz]
+//
+//
+//        //freq_in = 2 * 0.5 * utils::constants::C0 / (rows * dx);
+    }
+
+    double Step(double _dt) override
+    {
+//        T += 1.0;   // T keeps track of the number of times FDTD loop
+//                        // is executed.
+//                           
+//        // Calculate the Dz field
+//        for (int j = 1; j < JE; j++) {
+//            for (int i = 1; i < IE; i++) {
+//                dz[i][j] += 0.5*(   hy[i][j] - hy[i-1][j]
+//                                  - hx[i][j] + hx[i][j-1] ); 
+//            }
+//        }
+//        
+//        // Put a Gaussian pulse in the middle
+//        //dz[ic][jc] = exp( -0.5*pow((t0-T)/spread,2.0) );
+//
+//        // square function
+//        //double integral_part;
+//        //double xx = std::modf(dt*T * freq_in, &integral_part);
+//        //carrier = xx > 0.5 ? 0.0 : 1.0;
+//
+//        carrier = sin(2.0*M_PI*freq_in*dt*T);
+//        enveloppe = 1.0;//exp( -0.5*pow((t0-T)/spread,2.0) );
+//        dz[1][1] += carrier * enveloppe * sourceAmplification;
+//        //dz[ic][jc] += carrier*enveloppe;
+//        //dz[IE/4][JE/4] += carrier*enveloppe;
+//
+//        Log::info("dt*T = ", dt*T, "\t\tcarrier = ", carrier, "\t\tenvelope = ", enveloppe);
+//        Log::info("f = ", freq_in);
+//
+//        // Calculate the Ez field
+//        for (int j = 1; j < JE; j++) {
+//            for (int i = 1; i < IE; i++) {
+//                ez[i][j] = ga[i][j]*dz[i][j]; 
+//                }
+//            }
+//
+//        // Calculate the Hx field
+//        for (int j = 0; j < JE-1; j++) {
+//            for (int i = 0; i < IE-1; i++) {
+//                hx[i][j] += 0.5*( ez[i][j] - ez[i][j+1] );
+//            }
+//        }
+//        
+//        // Calculate the Hy field
+//        for (int j = 0; j < JE-1; j++) {
+//            for (int i = 0; i < IE-1; i++) {
+//                hy[i][j] += 0.5*( ez[i+1][j] - ez[i][j] );
+//            }
+//        }
+//        VoxelToColor();
+//
+//        return dt; // TODO
+    }
+
+    void VoxelToColor() {
+        auto [rows, cols, stacks] = this->gridSize.elements;
+        uint32_t stack = 0;
+        for (int32_t row = 0; row < rows; row++) {
+            for (int32_t col = 0; col < cols; col++) {
+                // TODO try something else other than ez
+                uint32_t index = IndexFromSimCoords(row, col, stack);
+                //this->voxels[index].color = FieldStrengthToColor(ez[row][col]);
+            }
+        }
+    }
+
+    void TriggerSource() override {
+      sourceAmplification = sourceAmplification > 0.01 ? 0.0 : 1.0;
+    }
+
+
+private:
+
+    std::vector<
+        std::vector<
+            std::vector<
+                double
+            >
+        >
+    > dx, dy, dz,
+      ex, ey, ez,
+      hx, hy, hz,
+      ix, iy, iz,
+      gax, gay, gaz,
+      gbx, gby, gbz,
+      //
+      idyl, idyh,
+      ihyl, ihyh,
+      idzl, idzh,
+      ihzl, ihzh,
+      //
+      real_pt, imag_pt;
+
+    std::vector<
+        std::vector<
+            double
+        >
+    > amp, phase;
+
+    std::vector<
+        double
+    >  gi1, gi2, gi3, 
+       gj1, gj2, gj3, 
+       gk1, gk2, gk3, 
+       fi1, fi2, fi3, 
+       fj1, fj2, fj3, 
+       fk1, fk2, fk3;
+
+
+
+    int IE, JE, KE;
+    int ia, ja, ka, ib, jb, kb;
+    int l,m,n,i,j,k,ic,jc,kc,nsteps,n_pml;
+    double ddx,dt,T,epsz,muz,pi,eaf,npml;
+    double xn,xxn,xnum,xd,curl_e;
+    double t0,spread,pulse;
+    int ixh, jyh, kzh;
+    int NSTEPS;
+    double curl_h,curl_d;
+    double radius[10],epsilon[10],sigma[10],eps,cond;
+    int numsph;
+    float dist,xdist,ydist,zdist;
+
+    static constexpr int NFREQS = 3;
+    double freq[NFREQS],arg[NFREQS];
+    double real_in[5],imag_in[5],amp_in[5],phase_in[5];
+
+    double sourceAmplification = 1.0;
+
+};
+
+
 };
