@@ -12,10 +12,10 @@ inline utils::Color FieldStrengthToColor(double fieldValue)
 {
     constexpr double amplification = 5.0;
     double c = std::clamp(std::abs(amplification * fieldValue), 0.0, 1.0);
-    uint8_t R = c * 255;
-    uint8_t G = (1 - c) * 255;
-    uint8_t B = 0;
-    uint8_t alpha = c * 255;
+    uint8_t R = static_cast<uint8_t>( c * 255 );
+    uint8_t G = static_cast<uint8_t>( (1 - c) * 255 );
+    uint8_t B = static_cast<uint8_t>( 0 );
+    uint8_t alpha = static_cast<uint8_t>( c * 255 );
 
     return utils::Color{R, G, B, alpha};
 }
@@ -314,7 +314,36 @@ public:
         BaseSimulation(rows, cols, stacks)
     {
         using vd = std::vector<double>;
-        dz.resize(rows, std::vector<vd>(cols, vd(stacks)));
+        IE = rows;
+        JE = cols;
+        KE = stacks;
+        ia = ja = ka = 7; // here we should probably assert < rows
+
+        dx.resize(IE, std::vector<vd>(JE, vd(KE)));
+        dy.resize(IE, std::vector<vd>(JE, vd(KE)));
+        dz.resize(IE, std::vector<vd>(JE, vd(KE)));
+        ex.resize(IE, std::vector<vd>(JE, vd(KE)));
+        ey.resize(IE, std::vector<vd>(JE, vd(KE)));
+        ez.resize(IE, std::vector<vd>(JE, vd(KE)));
+        hx.resize(IE, std::vector<vd>(JE, vd(KE)));
+        hy.resize(IE, std::vector<vd>(JE, vd(KE)));
+        hz.resize(IE, std::vector<vd>(JE, vd(KE)));
+        ix.resize(IE, std::vector<vd>(JE, vd(KE)));
+        iy.resize(IE, std::vector<vd>(JE, vd(KE)));
+        iz.resize(IE, std::vector<vd>(JE, vd(KE)));
+        gax.resize(IE, std::vector<vd>(JE, vd(KE)));
+        gay.resize(IE, std::vector<vd>(JE, vd(KE)));
+        gaz.resize(IE, std::vector<vd>(JE, vd(KE)));
+        gbx.resize(IE, std::vector<vd>(JE, vd(KE)));
+        gby.resize(IE, std::vector<vd>(JE, vd(KE)));
+        gbz.resize(IE, std::vector<vd>(JE, vd(KE)));
+        
+        ez_inc.resize(JE);
+        hx_inc.resize(JE);
+
+        idxl.resize(ia, std::vector<vd>(JE, vd(KE)));
+        // TODO tady
+
         InitRandomState();
     }
 
@@ -325,10 +354,25 @@ public:
         for (int32_t row = 0; row < rows; row++) {
             for (int32_t col = 0; col < cols; col++) {
                 for (int32_t stack = 0; stack < stacks; stack++) {
+                    dx[row][col][stack] = 0.0;
+                    dy[row][col][stack] = 0.0;
                     dz[row][col][stack] = 0.0;
-                    ez[row][col][stack] = 0.0;
+                    dx[row][col][stack] = 0.0;
+                    dy[row][col][stack] = 0.0;
+                    dz[row][col][stack] = 0.0;
                     hx[row][col][stack] = 0.0;
                     hy[row][col][stack] = 0.0;
+                    hz[row][col][stack] = 0.0;
+                    ix[row][col][stack] = 0.0;
+                    iy[row][col][stack] = 0.0;
+                    iz[row][col][stack] = 0.0;
+                    gax[row][col][stack] = 0.0;
+                    gay[row][col][stack] = 0.0;
+                    gaz[row][col][stack] = 0.0;
+                    gbx[row][col][stack] = 0.0;
+                    gby[row][col][stack] = 0.0;
+                    gbz[row][col][stack] = 0.0;
+
                     uint32_t index = IndexFromSimCoords(row, col, stack);
                     voxels[index].position = {row, col, stack};
                     voxels[index].color = utils::black;
@@ -439,6 +483,8 @@ private:
       gax, gay, gaz,
       gbx, gby, gbz,
       //
+      idxl, idxh,
+      ihxl, ihxh,
       idyl, idyh,
       ihyl, ihyh,
       idzl, idzh,
@@ -459,7 +505,8 @@ private:
        gk1, gk2, gk3, 
        fi1, fi2, fi3, 
        fj1, fj2, fj3, 
-       fk1, fk2, fk3;
+       fk1, fk2, fk3,
+       ez_inc, hx_inc;
 
 
 
