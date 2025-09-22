@@ -5,7 +5,7 @@
 A "voxel visualizer" implementing following simulations:
 
 * Game of Life: identical rules to the 2D version, only extended to 3D
-* FDTD Maxwell equations simulation, 2D and 3D variant
+* FDTD (finite differences time domain) Maxwell equations simulation, 2D and 3D variant
     * code taken from the book "ELECTROMAGNETIC SIMULATION USING THE FDTD METHOD" by DENNIS M. SULLIVAN
 
 Work in progress, this is only a rough sketch of the application. Needs a lot of work. Build instructions will be provided once it's done.
